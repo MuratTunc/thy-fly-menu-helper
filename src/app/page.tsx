@@ -1,7 +1,6 @@
 'use client'
 import homeImg from 'public/home_3.jpg';
 import Hero from '@/components/hero';
-import Sidebar from '@/components/sidebar';
 import LanguageModal from '@/components/languageModal'; // Import LanguageModal
 import { useState } from 'react';
 
