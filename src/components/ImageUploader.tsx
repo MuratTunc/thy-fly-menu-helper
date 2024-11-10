@@ -7,11 +7,10 @@ export default function ImageUploader() {
 
   // Manually list all the images under the public folder (add your actual image names here)
   const images = [
-    'image1.jpg',
-    'image2.jpg',
-    'image3.jpg',
-    'image4.png',
-    'image5.jpeg',
+    'menu1.jpg',
+    'menu2.jpg',
+    'menu3.jpg',
+    'menu4.jpg',
   ];
 
   const pdfUrl = '/menu1.pdf';
