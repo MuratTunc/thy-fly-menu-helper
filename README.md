@@ -15,6 +15,12 @@ In this study, the aim is to enable passengers to see the information written on
 > - Vercel [https://vercel.com/]
 
 
+> ## OCR Library
+>
+> - Tesseract JS
+
+
+
 
 
 
