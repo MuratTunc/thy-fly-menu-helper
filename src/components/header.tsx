@@ -9,7 +9,7 @@ export default function Header() {
         </Link>
 
         <div className="space-x-4 text-xl">
-          <Link href="/uploadMenu">SELECT MENU</Link>
+          <Link href="/uploadMenu">------------------</Link>
         </div>
       </nav>
     </div>
