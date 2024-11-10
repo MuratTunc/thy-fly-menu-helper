@@ -1,21 +1,20 @@
-'use client'
+'use client';
 import { useState, useRef } from 'react';
 import Tesseract from 'tesseract.js';
 import Image from 'next/image';
 import type { StaticImageData } from 'next/image';
 
-
 interface HeroProps {
-  imgData: StaticImageData | string;  // Update to accept both StaticImageData and string
+  imgData: StaticImageData | string;
   imgAlt: string;
   title: string;
 }
+
 export default function Hero(props: HeroProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string>('');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // List of images to select from (stored under public folder)
   const images = [
     '/menu1.png',
     '/menu2.png',
@@ -25,16 +24,14 @@ export default function Hero(props: HeroProps) {
 
   const handleImageClick = (image: string): void => {
     setSelectedImage(image);
-    extractTextFromImage(image);  // Trigger OCR when an image is selected
+    extractTextFromImage(image);
   };
 
   const extractTextFromImage = (image: string): void => {
-    // Load the image using the HTML <img> element
     const imgElement = document.createElement('img');
     imgElement.src = image;
 
     imgElement.onload = () => {
-      // Wait for the image to load, then draw the right part onto the canvas
       const canvas = canvasRef.current;
       if (canvas && imgElement.complete) {
         const ctx = canvas.getContext('2d');
@@ -42,26 +39,21 @@ export default function Hero(props: HeroProps) {
           const imageWidth = imgElement.width;
           const imageHeight = imgElement.height;
 
-          // Define cropping parameters to get the right half of the image
-          const cropX = imageWidth / 2; // Start from the middle to crop the right half
-          const cropWidth = imageWidth / 2; // Width of the right half
+          const cropX = imageWidth / 2;
+          const cropWidth = imageWidth / 2;
 
-          // Set the canvas size
           canvas.width = cropWidth;
           canvas.height = imageHeight;
 
-          // Draw the right side of the image onto the canvas
           ctx.drawImage(imgElement, cropX, 0, cropWidth, imageHeight, 0, 0, cropWidth, imageHeight);
 
-          // Perform OCR on the cropped right-side image
           Tesseract.recognize(
             canvas,
-            'eng', // Explicitly use English for OCR
+            'eng',
             {
-              logger: (m) => console.log(m), // Track OCR progress
+              logger: (m) => console.log(m),
             }
           ).then(({ data: { text } }) => {
-            // Extracted text from OCR
             setExtractedText(text);
           });
         }
@@ -71,7 +63,7 @@ export default function Hero(props: HeroProps) {
 
   return (
     <div className="relative h-screen">
-      {/* Background Image and Gradient Overlay */}
+      {/* Background Image */}
       <div className="absolute -z-10 inset-0">
         <Image
           src={props.imgData}
@@ -83,19 +75,22 @@ export default function Hero(props: HeroProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900" />
       </div>
 
-      {/* Title Centered */}
+      {/* Centered Title */}
       <div className="pt-48 flex justify-center items-center">
         <h1 className="text-white text-6xl">{props.title}</h1>
       </div>
 
-      {/* Thumbnails in Lower-Right Corner */}
+      {/* Centered Thumbnails with Hover Enlarge Effect */}
       <div
         style={{
-          position: 'absolute',
-          bottom: '20px',
-          right: '20px',
           display: 'flex',
-          gap: '10px',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '15px',
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
         }}
       >
         {images.map((image) => (
@@ -103,24 +98,27 @@ export default function Hero(props: HeroProps) {
             <Image
               src={image}
               alt={image}
-              width={80} // Thumbnail width
-              height={80} // Thumbnail height
+              width={100}
+              height={100}
               style={{
                 cursor: 'pointer',
-                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)', // Optional shadow for style
+                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)',
+                transition: 'transform 0.3s ease',
               }}
+              className="hover:scale-150" // Increased the scale to 150%
             />
           </div>
         ))}
       </div>
 
-      {/* Display Selected Image Name */}
+      {/* Selected Image Name */}
       {selectedImage && (
         <div
           style={{
             position: 'absolute',
             bottom: '100px',
-            right: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
             padding: '10px',
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             color: 'white',
@@ -131,15 +129,15 @@ export default function Hero(props: HeroProps) {
         </div>
       )}
 
-      {/* Display Extracted Text from OCR */}
+      {/* Extracted Text on the Right Side */}
       {extractedText && (
         <div
           style={{
             position: 'absolute',
-            bottom: '160px',
+            top: '20%',
             right: '20px',
             padding: '10px',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
             color: 'white',
             borderRadius: '8px',
             maxWidth: '300px',
