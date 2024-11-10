@@ -1,11 +1,10 @@
 'use client'
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Tesseract from 'tesseract.js';
-import type { StaticImageData } from 'next/image';
 import Image from 'next/image';
 
 interface HeroProps {
-  imgData: StaticImageData;
+  imgData: string;  // Path to the background image
   imgAlt: string;
   title: string;
 }
@@ -13,8 +12,9 @@ interface HeroProps {
 export default function Hero(props: HeroProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string>('');
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // List of images in the lower-right corner with updated .png extensions
+  // List of images to select from (stored under public folder)
   const images = [
     '/menu1.png',
     '/menu2.png',
@@ -24,19 +24,48 @@ export default function Hero(props: HeroProps) {
 
   const handleImageClick = (image: string): void => {
     setSelectedImage(image);
-    extractTextFromImage(image);  // Perform OCR when an image is clicked
+    extractTextFromImage(image);  // Trigger OCR when an image is selected
   };
 
   const extractTextFromImage = (image: string): void => {
-    Tesseract.recognize(
-      image,
-      'eng', // You can use different languages if needed
-      {
-        logger: (m) => console.log(m), // Logs OCR progress
+    // Load the image using the HTML <img> element
+    const imgElement = document.createElement('img');
+    imgElement.src = image;
+
+    imgElement.onload = () => {
+      // Wait for the image to load, then draw the right part onto the canvas
+      const canvas = canvasRef.current;
+      if (canvas && imgElement.complete) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const imageWidth = imgElement.width;
+          const imageHeight = imgElement.height;
+
+          // Define cropping parameters to get the right half of the image
+          const cropX = imageWidth / 2; // Start from the middle to crop the right half
+          const cropWidth = imageWidth / 2; // Width of the right half
+
+          // Set the canvas size
+          canvas.width = cropWidth;
+          canvas.height = imageHeight;
+
+          // Draw the right side of the image onto the canvas
+          ctx.drawImage(imgElement, cropX, 0, cropWidth, imageHeight, 0, 0, cropWidth, imageHeight);
+
+          // Perform OCR on the cropped right-side image
+          Tesseract.recognize(
+            canvas,
+            'eng', // Explicitly use English for OCR
+            {
+              logger: (m) => console.log(m), // Track OCR progress
+            }
+          ).then(({ data: { text } }) => {
+            // Extracted text from OCR
+            setExtractedText(text);
+          });
+        }
       }
-    ).then(({ data: { text } }) => {
-      setExtractedText(text); // Store the extracted text
-    });
+    };
   };
 
   return (
@@ -120,6 +149,9 @@ export default function Hero(props: HeroProps) {
           <p>{extractedText}</p>
         </div>
       )}
+
+      {/* Hidden Canvas for OCR Processing */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
     </div>
   );
 }
