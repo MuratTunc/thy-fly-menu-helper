@@ -47,9 +47,10 @@ export default function Hero(props: HeroProps) {
 
           ctx.drawImage(imgElement, cropX, 0, cropWidth, imageHeight, 0, 0, cropWidth, imageHeight);
 
+          // Recognize text from the image using the Tesseract OCR engine
           Tesseract.recognize(
             canvas,
-            'eng',
+            'eng', // Keep 'eng' as default, no language selection required now
             {
               logger: (m) => console.log(m),
             }
