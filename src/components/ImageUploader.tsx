@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react';
+import {  useState } from 'react';
 
 export default function ImageUploader() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
