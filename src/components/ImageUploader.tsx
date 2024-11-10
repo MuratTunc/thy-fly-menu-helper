@@ -1,16 +1,20 @@
 'use client'
-import {  useState } from 'react';
+import { useState } from 'react';
+import Image from 'next/image'; // Import the Image component
 
 export default function ImageUploader() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  
-  // Manually list all the images under the public folder (as Next.js doesn't allow reading the public folder dynamically)
+
+  // Manually list all the images under the public folder (add your actual image names here)
   const images = [
-    'menu1.jpg',
-    'menu2.jpg',
-    'menu3.jpg',
-    'menu4.jpg',
+    'image1.jpg',
+    'image2.jpg',
+    'image3.jpg',
+    'image4.png',
+    'image5.jpeg',
   ];
+
+  const pdfUrl = '/menu1.pdf';
 
   const handleImageClick = (image: string) => {
     setSelectedImage(image);
@@ -18,13 +22,24 @@ export default function ImageUploader() {
 
   return (
     <div>
+      <h1>PDF Viewer</h1>
+      <iframe
+        src={pdfUrl}
+        width="100%"
+        height="600px"
+        style={{ border: 'none' }}
+      />
+
+      <h2>Image Gallery</h2>
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         {images.map((image) => (
           <div key={image} className="image-item" onClick={() => handleImageClick(image)}>
-            <img
+            <Image
               src={`/${image}`} // Images are directly under the public/ directory
               alt={image}
-              style={{ width: '900px', height: '900px', cursor: 'pointer' }}
+              width={150} // Set width
+              height={150} // Set height
+              style={{ cursor: 'pointer' }}
             />
           </div>
         ))}
