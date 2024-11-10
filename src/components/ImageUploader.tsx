@@ -12,23 +12,13 @@ export default function ImageUploader() {
     'menu3.jpg',
     'menu4.jpg',
   ];
-
-  const pdfUrl = '/menu1.pdf';
-
+  
   const handleImageClick = (image: string) => {
     setSelectedImage(image);
   };
 
   return (
     <div>
-      <h1>PDF Viewer</h1>
-      <iframe
-        src={pdfUrl}
-        width="100%"
-        height="600px"
-        style={{ border: 'none' }}
-      />
-
       <h2>Image Gallery</h2>
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         {images.map((image) => (
