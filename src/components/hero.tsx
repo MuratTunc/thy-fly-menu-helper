@@ -2,13 +2,14 @@
 import { useState, useRef } from 'react';
 import Tesseract from 'tesseract.js';
 import Image from 'next/image';
+import type { StaticImageData } from 'next/image';
+
 
 interface HeroProps {
-  imgData: string;  // Path to the background image
+  imgData: StaticImageData | string;  // Update to accept both StaticImageData and string
   imgAlt: string;
   title: string;
 }
-
 export default function Hero(props: HeroProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string>('');
