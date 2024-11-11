@@ -10,9 +10,14 @@ interface HeroProps {
   title: string;
 }
 
+interface MenuItem {
+  name: string;
+  description: string;
+}
+
 export default function Hero(props: HeroProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [extractedText, setExtractedText] = useState<string>('');
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const images = [
@@ -55,11 +60,33 @@ export default function Hero(props: HeroProps) {
               logger: (m) => console.log(m),
             }
           ).then(({ data: { text } }) => {
-            setExtractedText(text);
+            console.log('Extracted Text:', text);  // Log OCR output
+            parseMenuItems(text); // Parse and display individual items
           });
         }
       }
     };
+  };
+
+  const parseMenuItems = (text: string) => {
+    // Split the text into lines based on line breaks
+    const lines = text.split('\n');
+    const items: MenuItem[] = [];
+
+    lines.forEach((line) => {
+      // Only process non-empty lines and skip lines starting with "You"
+      if (line.trim() !== '' && !line.trim().toLowerCase().startsWith('you')) {
+        const itemName = line.trim();
+        items.push({ name: itemName, description: '' }); // Add each line as a menu item
+      }
+    });
+
+    console.log('Parsed Menu Items:', items);
+    setMenuItems(items);
+  };
+
+  const handleDishSelect = (dishName: string) => {
+    console.log(`Dish selected: ${dishName}`);
   };
 
   return (
@@ -130,23 +157,32 @@ export default function Hero(props: HeroProps) {
         </div>
       )}
 
-      {/* Extracted Text on the Right Side */}
-      {extractedText && (
+      {/* Menu Items Display */}
+      {menuItems.length > 0 && (
         <div
           style={{
             position: 'absolute',
-            top: '20%',
-            right: '20px',
+            top: '1%',
+            right: '5px',
             padding: '10px',
             backgroundColor: 'rgba(0, 0, 0, 0.7)',
             color: 'white',
             borderRadius: '8px',
-            maxWidth: '300px',
+            maxWidth: '250px',
             overflowY: 'auto',
           }}
         >
-          <h3>Extracted Text:</h3>
-          <p>{extractedText}</p>
+          <h3 className="font-bold text-lg mb-4">Menu Items:</h3>
+          {menuItems.map((item, index) => (
+            <div
+              key={index}
+              className="mb-2 p-2 border-2 border-gray-300 rounded-lg hover:bg-gray-800 cursor-pointer flex justify-center items-center text-center"
+              onClick={() => handleDishSelect(item.name)}
+              style={{ height: '50px', fontSize: '12px' }} // Reduced height and font size
+            >
+              <h4 className="font-bold text-sm">{item.name}</h4> {/* Smaller font size */}
+            </div>
+          ))}
         </div>
       )}
 
