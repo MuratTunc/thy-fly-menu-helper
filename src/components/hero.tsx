@@ -19,12 +19,10 @@ interface MenuItem {
 }
 
 export default function Hero(props: HeroProps) {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [language, setLanguage] = useState<string>('en'); // Default language
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown state
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
@@ -34,7 +32,6 @@ export default function Hero(props: HeroProps) {
   };
 
   const handleImageClick = (image: string): void => {
-    setSelectedImage(image);
     extractTextFromImage(image);
   };
 
@@ -141,21 +138,21 @@ export default function Hero(props: HeroProps) {
         )}
       </div>
 
-     {/* Menu Items Display */}
-        {menuItems.length > 0 && (
+      {/* Menu Items Display */}
+      {menuItems.length > 0 && (
         <div className="absolute top-1 right-5 p-3 bg-black bg-opacity-70 text-white rounded-lg max-w-xs">
-        <h3 className="font-bold mb-2">Menu Items:</h3>
-        {menuItems.map((item, index) => (
-        <div
-           key={index}
-           className="mb-1 p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 flex justify-center items-center h-10"
-           onClick={() => handleImageClick(item.name)}
-        >
-        {item.name}
-      </div>
-      ))}
-     </div>
-    )}
+          <h3 className="font-bold mb-2">Menu Items:</h3>
+          {menuItems.map((item, index) => (
+            <div
+              key={index}
+              className="mb-1 p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 flex justify-center items-center h-10"
+              onClick={() => handleImageClick(item.name)}
+            >
+              {item.name}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
