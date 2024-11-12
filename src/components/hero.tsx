@@ -2,7 +2,10 @@
 import { useState, useRef } from 'react';
 import Tesseract from 'tesseract.js';
 import Image from 'next/image';
+import { translate } from './translate'; // Import translate function
 import type { StaticImageData } from 'next/image';
+import { languages } from './languages';
+import { images } from './images';
 
 interface HeroProps {
   imgData: StaticImageData | string;
@@ -18,21 +21,24 @@ interface MenuItem {
 export default function Hero(props: HeroProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [language, setLanguage] = useState<string>('es'); // Default language
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown state
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const images = [
-    '/menu1.png',
-    '/menu2.png',
-    '/menu3.png',
-    '/menu4.png',
-  ];
+
+  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+
+  const handleLanguageSelect = (code: string) => {
+    setLanguage(code);
+    setIsDropdownOpen(false);
+  };
 
   const handleImageClick = (image: string): void => {
     setSelectedImage(image);
     extractTextFromImage(image);
   };
 
-  const extractTextFromImage = (image: string): void => {
+  const extractTextFromImage = async (image: string): Promise<void> => {
     const imgElement = document.createElement('img');
     imgElement.src = image;
 
@@ -52,41 +58,33 @@ export default function Hero(props: HeroProps) {
 
           ctx.drawImage(imgElement, cropX, 0, cropWidth, imageHeight, 0, 0, cropWidth, imageHeight);
 
-          // Recognize text from the image using the Tesseract OCR engine
           Tesseract.recognize(
             canvas,
-            'eng', // Keep 'eng' as default, no language selection required now
-            {
-              logger: (m) => console.log(m),
-            }
-          ).then(({ data: { text } }) => {
-            console.log('Extracted Text:', text);  // Log OCR output
-            parseMenuItems(text); // Parse and display individual items
+            'eng',
+            { logger: (m) => console.log(m) }
+          ).then(async ({ data: { text } }) => {
+            console.log('Extracted Text:', text);
+            const translatedExtractedText = await translate(text, language);
+            parseMenuItems(translatedExtractedText);
           });
         }
       }
     };
   };
 
-  const parseMenuItems = (text: string) => {
-    // Split the text into lines based on line breaks
+  const parseMenuItems = async (text: string) => {
     const lines = text.split('\n');
     const items: MenuItem[] = [];
 
-    lines.forEach((line) => {
-      // Only process non-empty lines and skip lines starting with "You"
+    for (const line of lines) {
       if (line.trim() !== '' && !line.trim().toLowerCase().startsWith('you')) {
         const itemName = line.trim();
-        items.push({ name: itemName, description: '' }); // Add each line as a menu item
+        //const translatedItemName = await translate(itemName, language);
+        items.push({ name: itemName, description: '' });
       }
-    });
+    }
 
-    console.log('Parsed Menu Items:', items);
     setMenuItems(items);
-  };
-
-  const handleDishSelect = (dishName: string) => {
-    console.log(`Dish selected: ${dishName}`);
   };
 
   return (
@@ -108,19 +106,8 @@ export default function Hero(props: HeroProps) {
         <h1 className="text-white text-6xl">{props.title}</h1>
       </div>
 
-      {/* Centered Thumbnails with Hover Enlarge Effect */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '15px',
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-        }}
-      >
+      {/* Centered Thumbnails */}
+      <div className="flex justify-center items-center gap-4 mt-6">
         {images.map((image) => (
           <div key={image} onClick={() => handleImageClick(image)}>
             <Image
@@ -128,65 +115,52 @@ export default function Hero(props: HeroProps) {
               alt={image}
               width={100}
               height={100}
-              style={{
-                cursor: 'pointer',
-                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)',
-                transition: 'transform 0.3s ease',
-              }}
-              className="hover:scale-150" // Increased the scale to 150%
+              className="hover:scale-110 transition-transform"
             />
           </div>
         ))}
       </div>
 
-      {/* Selected Image Name */}
-      {selectedImage && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '100px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            padding: '10px',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            color: 'white',
-            borderRadius: '8px',
-          }}
+      {/* Language Selection Button Below Thumbnails */}
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={toggleDropdown}
+          className="bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-200"
         >
-          <p>Selected Image: {selectedImage}</p>
-        </div>
-      )}
+          Select Language
+        </button>
+        {isDropdownOpen && (
+          <div className="absolute mt-2 bg-white shadow-lg rounded-md overflow-hidden z-50">
+            {languages.map((lang) => (
+              <div
+                key={lang.code}
+                onClick={() => handleLanguageSelect(lang.code)}
+                className="cursor-pointer px-4 py-2 hover:bg-blue-100"
+              >
+                {lang.name} ({lang.code})
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Menu Items Display */}
       {menuItems.length > 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '1%',
-            right: '5px',
-            padding: '10px',
-            backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            color: 'white',
-            borderRadius: '8px',
-            maxWidth: '250px',
-            overflowY: 'auto',
-          }}
-        >
-          <h3 className="font-bold text-lg mb-4">Menu Items:</h3>
+        <div className="absolute top-1 right-5 p-3 bg-black bg-opacity-70 text-white rounded-lg max-w-xs">
+          <h3 className="font-bold mb-2">Menu Items:</h3>
           {menuItems.map((item, index) => (
             <div
               key={index}
-              className="mb-2 p-2 border-2 border-gray-300 rounded-lg hover:bg-gray-800 cursor-pointer flex justify-center items-center text-center"
-              onClick={() => handleDishSelect(item.name)}
-              style={{ height: '50px', fontSize: '12px' }} // Reduced height and font size
+              className="mb-1 p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600"
+              onClick={() => handleImageClick(item.name)}
             >
-              <h4 className="font-bold text-sm">{item.name}</h4> {/* Smaller font size */}
+              {item.name}
             </div>
           ))}
         </div>
       )}
 
-      {/* Hidden Canvas for OCR Processing */}
+      {/* Hidden Canvas */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
     </div>
   );
