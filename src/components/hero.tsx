@@ -1,5 +1,5 @@
-'use client'
-import { useState, useRef } from 'react';
+'use client';
+import { useState, useRef, useEffect } from 'react';
 import { translate } from './translate';
 import { languages } from './languages';
 import { images } from './images';
@@ -25,6 +25,7 @@ export default function Hero(props: HeroProps) {
   const [selectedItems, setSelectedItems] = useState<number[]>([]); // Track selected items
   const [loading, setLoading] = useState(false); // Loading state for OCR processing
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
@@ -94,6 +95,23 @@ export default function Hero(props: HeroProps) {
     );
   };
 
+  const handleOutsideClick = (event: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setIsDropdownOpen(false); // Close dropdown if clicked outside
+    }
+  };
+
+  useEffect(() => {
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    } else {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [isDropdownOpen]);
+
   return (
     <div className="relative h-screen">
       {/* Background Image */}
@@ -137,7 +155,10 @@ export default function Hero(props: HeroProps) {
           Select Language
         </button>
         {isDropdownOpen && (
-          <div className="absolute mt-2 bg-white shadow-lg rounded-md overflow-hidden z-50">
+          <div
+            ref={dropdownRef} // Attach ref to dropdown
+            className="absolute mt-2 bg-white shadow-lg rounded-md overflow-hidden z-50 max-h-96 overflow-y-auto"
+          >
             {languages.map((lang) => (
               <div
                 key={lang.code}
