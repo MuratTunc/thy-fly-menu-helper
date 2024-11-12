@@ -1,4 +1,4 @@
-'use client';
+'use client'
 import { useState, useRef } from 'react';
 import { translate } from './translate';
 import { languages } from './languages';
@@ -22,6 +22,8 @@ export default function Hero(props: HeroProps) {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [language, setLanguage] = useState<string>('en'); // Default language
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown state
+  const [selectedItems, setSelectedItems] = useState<number[]>([]); // Track selected items
+  const [loading, setLoading] = useState(false); // Loading state for OCR processing
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
@@ -32,6 +34,8 @@ export default function Hero(props: HeroProps) {
   };
 
   const handleImageClick = (image: string): void => {
+    setSelectedItems([]); // Clear previous selections
+    setLoading(true); // Start loading when an image is clicked
     extractTextFromImage(image);
   };
 
@@ -63,6 +67,7 @@ export default function Hero(props: HeroProps) {
             console.log('Extracted Text:', text);
             const translatedExtractedText = await translate(text, language);
             parseMenuItems(translatedExtractedText);
+            setLoading(false); // Stop loading once OCR is complete
           });
         }
       }
@@ -79,6 +84,14 @@ export default function Hero(props: HeroProps) {
     }
 
     setMenuItems(items);
+  };
+
+  const toggleItemSelection = (index: number) => {
+    setSelectedItems((prevSelectedItems) =>
+      prevSelectedItems.includes(index)
+        ? prevSelectedItems.filter((i) => i !== index)
+        : [...prevSelectedItems, index]
+    );
   };
 
   return (
@@ -138,14 +151,23 @@ export default function Hero(props: HeroProps) {
         )}
       </div>
 
+      {/* Loading Spinner */}
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="loader border-t-4 border-blue-500 rounded-full w-16 h-16 animate-spin"></div>
+        </div>
+      )}
+
       {/* Menu Items Display */}
       {menuItems.length > 0 && (
       <div className="absolute top-1 right-5 p-3 bg-black bg-opacity-70 text-white rounded-lg max-w-xs max-h-full overflow-y-auto">
       {menuItems.map((item, index) => (
       <div
         key={index}
-        className="mb-1 p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 flex justify-center items-center h-10"
-        onClick={() => handleImageClick(item.name)}
+        className={`mb-1 p-2 rounded cursor-pointer flex justify-center items-center h-10 ${
+          selectedItems.includes(index) ? 'bg-green-500' : 'bg-gray-700 hover:bg-gray-600'
+        }`}
+        onClick={() => toggleItemSelection(index)}
       >
         {item.name}
       </div>
