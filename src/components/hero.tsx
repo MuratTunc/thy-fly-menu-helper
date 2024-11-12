@@ -1,11 +1,11 @@
 'use client';
 import { useState, useRef } from 'react';
-import Tesseract from 'tesseract.js';
-import Image from 'next/image';
-import { translate } from './translate'; // Import translate function
-import type { StaticImageData } from 'next/image';
+import { translate } from './translate';
 import { languages } from './languages';
 import { images } from './images';
+import Tesseract from 'tesseract.js';
+import Image from 'next/image';
+import type { StaticImageData } from 'next/image';
 
 interface HeroProps {
   imgData: StaticImageData | string;
@@ -21,7 +21,7 @@ interface MenuItem {
 export default function Hero(props: HeroProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [language, setLanguage] = useState<string>('es'); // Default language
+  const [language, setLanguage] = useState<string>('en'); // Default language
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown state
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -77,11 +77,8 @@ export default function Hero(props: HeroProps) {
     const items: MenuItem[] = [];
 
     for (const line of lines) {
-      if (line.trim() !== '' && !line.trim().toLowerCase().startsWith('you')) {
         const itemName = line.trim();
-        //const translatedItemName = await translate(itemName, language);
         items.push({ name: itemName, description: '' });
-      }
     }
 
     setMenuItems(items);
@@ -144,21 +141,21 @@ export default function Hero(props: HeroProps) {
         )}
       </div>
 
-      {/* Menu Items Display */}
-      {menuItems.length > 0 && (
+     {/* Menu Items Display */}
+        {menuItems.length > 0 && (
         <div className="absolute top-1 right-5 p-3 bg-black bg-opacity-70 text-white rounded-lg max-w-xs">
-          <h3 className="font-bold mb-2">Menu Items:</h3>
-          {menuItems.map((item, index) => (
-            <div
-              key={index}
-              className="mb-1 p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600"
-              onClick={() => handleImageClick(item.name)}
-            >
-              {item.name}
-            </div>
-          ))}
-        </div>
-      )}
+        <h3 className="font-bold mb-2">Menu Items:</h3>
+        {menuItems.map((item, index) => (
+        <div
+           key={index}
+           className="mb-1 p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 flex justify-center items-center h-10"
+           onClick={() => handleImageClick(item.name)}
+        >
+        {item.name}
+      </div>
+      ))}
+     </div>
+    )}
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
