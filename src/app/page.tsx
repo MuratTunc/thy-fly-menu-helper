@@ -9,7 +9,7 @@ export default function Home() {
       <Hero
         imgData={homeImg}
         imgAlt="FLY MENU ASSISTANT"
-        title="Welcome to flight menu selection"
+        title="Please Click Menu"
       />
     </div>
   );
