@@ -45,7 +45,7 @@ export default function Hero(props: HeroProps) {
     try {
       const imgElement = document.createElement('img');
       imgElement.src = image;
-
+  
       imgElement.onload = () => {
         const canvas = canvasRef.current;
         if (canvas && imgElement.complete) {
@@ -53,15 +53,15 @@ export default function Hero(props: HeroProps) {
           if (ctx) {
             const imageWidth = imgElement.width;
             const imageHeight = imgElement.height;
-
+  
             const cropX = imageWidth / 2;
             const cropWidth = imageWidth / 2;
-
+  
             canvas.width = cropWidth;
             canvas.height = imageHeight;
-
+  
             ctx.drawImage(imgElement, cropX, 0, cropWidth, imageHeight, 0, 0, cropWidth, imageHeight);
-
+  
             Tesseract.recognize(canvas, 'eng', { logger: (m) => console.log(m) })
               .then(async ({ data: { text } }) => {
                 const translatedExtractedText = await translate(text, language);
@@ -76,18 +76,23 @@ export default function Hero(props: HeroProps) {
       setLoading(false);
     }
   };
-
+  
   const parseMenuItems = (text: string) => {
     const lines = text.split('\n');
     const items: MenuItem[] = [];
-
+  
     for (const line of lines) {
       const itemName = line.trim();
-      items.push({ name: itemName, description: '' });
+  
+      // Check if the line contains at least one letter
+      if (/[a-zA-Z]/.test(itemName)) {
+        items.push({ name: itemName, description: '' });
+      }
     }
-
+  
     setMenuItems(items);
   };
+  
 
   const toggleItemSelection = (index: number) => {
     const updatedSelectedItems = selectedItems.includes(index)
