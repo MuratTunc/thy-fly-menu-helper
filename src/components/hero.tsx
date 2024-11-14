@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { translate } from './translate';
 import { languages } from './languages';
+import { chatbotanswer } from './chatbotanswer';
 import { images } from './images';
 import Tesseract from 'tesseract.js';
 import Image from 'next/image';
@@ -143,37 +144,21 @@ export default function Hero(props: HeroProps) {
 
   const handleUserQuery = async () => {
     if (userQuery.trim()) {
-      setAiResponse('AI is typing...'); // Placeholder for AI response
-  
-      try {
-        const response = await fetch('/api/ask-ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: userQuery }),
-        });
-  
-        if (!response.ok) {
-          console.error('API error:', response.statusText);
-          setAiResponse('Sorry, I couldn\'t understand your question. Please try again.');
-          return;
+        console.log('User Query:', userQuery);  // Log user query to see if it's updating correctly
+        setAiResponse('AI is typing...');
+
+        try {
+            const response = await chatbotanswer(userQuery);  // Pass the correct user input
+            console.log('AI Response:', response);  // Log AI response to check
+
+            setAiResponse(response);  // Update UI with the AI response
+        } catch (error) {
+            console.error('Error fetching AI response:', error);
+            setAiResponse('Sorry, there was an error with the AI service.');
         }
-  
-        const data = await response.json();
-        console.log('Received AI Response:', data);  // Log the entire response
-  
-        // Check if `data.answer` exists
-        if (data && data.result) {
-          setAiResponse(data.result);  // Use the correct field from the API response
-        } else {
-          setAiResponse('No answer found from AI. Please try again.');
-        }
-      } catch (error) {
-        console.error('Error fetching AI response:', error);
-        setAiResponse('Sorry, there was an error with the AI service.');
-      }
     }
-  };
-  
+};
+
   
 
   useEffect(() => {
@@ -286,30 +271,31 @@ export default function Hero(props: HeroProps) {
         </div>
       )}
 
-      {/* Chat Assistant at Bottom Center */}
-       {/* Chat Assistant at Bottom Center */}
-<div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-96 p-3 bg-white rounded shadow-lg">
-  <textarea
-    placeholder="Ask about the menu..."
-    value={userQuery}
-    onChange={(e) => setUserQuery(e.target.value)}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        handleUserQuery();
-      } else if (e.key === 'Enter' && e.shiftKey) {
-        setUserQuery((prev) => prev + '\n');
-      }
-    }}
-    className="w-full h-20 p-2 border rounded resize-none"
-  ></textarea>
+      
+  {/* Chat Assistant at Bottom Center */}
+     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-96 p-3 bg-white rounded shadow-lg">
+     <textarea
+        placeholder="Ask about the menu..."
+        value={userQuery}
+        onChange={(e) => setUserQuery(e.target.value)}
+        onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleUserQuery();  // Handle user query when 'Enter' is pressed
+            } else if (e.key === 'Enter' && e.shiftKey) {
+                setUserQuery((prev) => prev + '\n');
+            }
+        }}
+        className="w-full h-20 p-2 border rounded resize-none"
+    ></textarea>
 
-  {aiResponse && (
-    <div className="mt-3 bg-gray-100 p-2 rounded text-gray-800">
-      {aiResponse}
-    </div>
-  )}
+    {aiResponse && (
+        <div className="mt-3 bg-gray-100 p-2 rounded text-gray-800">
+            {aiResponse}  {/* Display the AI response */}
+        </div>
+    )}
 </div>
+
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
