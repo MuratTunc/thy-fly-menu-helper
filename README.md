@@ -15,17 +15,33 @@ In this study, the aim is to enable passengers to see the information written on
 > - Vercel [https://vercel.com/]
 
 
+> ## Front-End Server
+>
+> - Vercel-[https://vercel.com/]
+
+> ## Back-End Server
+>
+> - Digital Ocean-personal server droplet-Ubuntu Linux- [http://143.198.157.18:8000]
+
 > ## OCR Library
 >
 > - Tesseract JS
 
+> ## Language Translate Library
+>
+> - Google API on Back-End Server-[https://github.com/bregydoc/gtranslate.git]
 
+> ## NLP Library
+>
+> - Google API on Back-End Server-[https://github.com/pemistahl/lingua-go.git]
 
+> ## Source Code
+>
+> - Front-End-[https://github.com/MuratTunc/thy-fly-menu-helper]
 
 
 
 ## Getting Started
-
 
 Open https://thy-fly-menu-helper.vercel.app/with your browser to see the result.
 
