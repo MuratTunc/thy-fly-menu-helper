@@ -25,6 +25,8 @@ export default function Hero(props: HeroProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
+  const [userQuery, setUserQuery] = useState(''); // State for user input
+  const [aiResponse, setAiResponse] = useState<string>(''); // State for AI response
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -139,6 +141,41 @@ export default function Hero(props: HeroProps) {
     }
   };
 
+  const handleUserQuery = async () => {
+    if (userQuery.trim()) {
+      setAiResponse('AI is typing...'); // Placeholder for AI response
+  
+      try {
+        const response = await fetch('/api/ask-ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: userQuery }),
+        });
+  
+        if (!response.ok) {
+          console.error('API error:', response.statusText);
+          setAiResponse('Sorry, I couldn\'t understand your question. Please try again.');
+          return;
+        }
+  
+        const data = await response.json();
+        console.log('Received AI Response:', data);  // Log the entire response
+  
+        // Check if `data.answer` exists
+        if (data && data.result) {
+          setAiResponse(data.result);  // Use the correct field from the API response
+        } else {
+          setAiResponse('No answer found from AI. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error fetching AI response:', error);
+        setAiResponse('Sorry, there was an error with the AI service.');
+      }
+    }
+  };
+  
+  
+
   useEffect(() => {
     if (isDropdownOpen) {
       document.addEventListener('mousedown', handleOutsideClick);
@@ -248,6 +285,31 @@ export default function Hero(props: HeroProps) {
           ))}
         </div>
       )}
+
+      {/* Chat Assistant at Bottom Center */}
+       {/* Chat Assistant at Bottom Center */}
+<div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-96 p-3 bg-white rounded shadow-lg">
+  <textarea
+    placeholder="Ask about the menu..."
+    value={userQuery}
+    onChange={(e) => setUserQuery(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleUserQuery();
+      } else if (e.key === 'Enter' && e.shiftKey) {
+        setUserQuery((prev) => prev + '\n');
+      }
+    }}
+    className="w-full h-20 p-2 border rounded resize-none"
+  ></textarea>
+
+  {aiResponse && (
+    <div className="mt-3 bg-gray-100 p-2 rounded text-gray-800">
+      {aiResponse}
+    </div>
+  )}
+</div>
 
       {/* Hidden Canvas */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />

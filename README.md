@@ -35,6 +35,11 @@ In this study, the aim is to enable passengers to see the information written on
 >
 > - Google API on Back-End Server-[https://github.com/pemistahl/lingua-go.git]
 
+
+> ## AI Library ( chat bot)
+>
+> - OpenAI
+
 > ## Source Code
 >
 > - Front-End-[https://github.com/MuratTunc/thy-fly-menu-helper]
