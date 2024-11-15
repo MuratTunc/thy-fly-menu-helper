@@ -50,3 +50,6 @@ In this study, the aim is to enable passengers to see the information written on
 
 Open https://thy-fly-menu-helper.vercel.app/with your browser to see the result.
 
+
+## General hierarchy of the project
+![main.png](pictures/main.png)
