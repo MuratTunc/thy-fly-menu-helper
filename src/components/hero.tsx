@@ -130,11 +130,21 @@ export default function Hero(props: HeroProps) {
     const updatedSelectedItems = selectedItems.includes(index)
       ? selectedItems.filter((i) => i !== index)
       : [...selectedItems, index];
-
+  
     setSelectedItems(updatedSelectedItems);
-
-    const updatedSelectedMenuItems = menuItems.filter((_, i) => updatedSelectedItems.includes(i));
+  
+    const updatedSelectedMenuItems = menuItems.filter((_, i) =>
+      updatedSelectedItems.includes(i)
+    );
     setSelectedMenuItems(updatedSelectedMenuItems); // Update selected menu items based on toggle
+  
+    // Send the selected item(s) to the chatbot
+    if (updatedSelectedMenuItems.length > 0) {
+      const selectedItemsText = updatedSelectedMenuItems.map(item => item.name).join(', ');
+      const queryText = `I selected: ${selectedItemsText}`;
+      setUserQuery(queryText);  // Update the user query
+      handleUserQuery(queryText);  // Trigger the chatbot with the updated user input
+    }
   };
 
   const handleOutsideClick = (event: MouseEvent) => {
@@ -143,22 +153,22 @@ export default function Hero(props: HeroProps) {
     }
   };
 
-  const handleUserQuery = async () => {
-    if (userQuery.trim()) {
-        console.log('User Query:', userQuery);  // Log user query to see if it's updating correctly
-        setAiResponse('AI is typing...');
-
-        try {
-            const response = await chatbotanswer(userQuery);  // Pass the correct user input
-            console.log('AI Response:', response);  // Log AI response to check
-
-            setAiResponse(response);  // Update UI with the AI response
-        } catch (error) {
-            console.error('Error fetching AI response:', error);
-            setAiResponse('Sorry, there was an error with the AI service.');
-        }
+  const handleUserQuery = async (queryText: string) => {
+    if (queryText.trim()) {
+      console.log('User Query:', queryText);  // Log user query to see if it's updating correctly
+      setAiResponse('AI is typing...');
+  
+      try {
+        const response = await chatbotanswer(queryText);  // Pass the correct user input
+        console.log('AI Response:', response);  // Log AI response to check
+  
+        setAiResponse(response);  // Update UI with the AI response
+      } catch (error) {
+        console.error('Error fetching AI response:', error);
+        setAiResponse('Sorry, there was an error with the AI service.');
+      }
     }
-};
+  };
 
   
 
@@ -274,27 +284,27 @@ export default function Hero(props: HeroProps) {
 
       
   {/* Chat Assistant at Bottom Center */}
-     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-96 p-3 bg-white rounded shadow-lg">
-     <textarea
-        placeholder="Ask about the menu..."
-        value={userQuery}
-        onChange={(e) => setUserQuery(e.target.value)}
-        onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleUserQuery();  // Handle user query when 'Enter' is pressed
-            } else if (e.key === 'Enter' && e.shiftKey) {
-                setUserQuery((prev) => prev + '\n');
-            }
-        }}
-        className="w-full h-20 p-2 border rounded resize-none"
-    ></textarea>
+  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-96 p-3 bg-white rounded shadow-lg">
+  <textarea
+    placeholder="You can ask specific dietary properties about menu selections"
+    value={userQuery}
+    onChange={(e) => setUserQuery(e.target.value)}
+    onKeyDown={(e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleUserQuery();  // Handle user query when 'Enter' is pressed
+        } else if (e.key === 'Enter' && e.shiftKey) {
+            setUserQuery((prev) => prev + '\n');
+        }
+    }}
+    className="w-full h-20 p-2 border rounded resize-none"
+  ></textarea>
 
-    {aiResponse && (
-        <div className="mt-3 bg-gray-100 p-2 rounded text-gray-800">
-            {aiResponse}  {/* Display the AI response */}
-        </div>
-    )}
+  {aiResponse && (
+    <div className="mt-3 bg-gray-100 p-2 rounded text-gray-800">
+      {aiResponse}  {/* Display the AI response */}
+    </div>
+  )}
 </div>
 
 
