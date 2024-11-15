@@ -7,7 +7,7 @@ interface TranslateResponse {
   
   export const translate = async (text: string, to: string): Promise<string> => {
     try {
-      const response = await fetch('http://143.198.157.18:8000/translate', {
+      const response = await fetch('https://mutubackend.com/translate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
