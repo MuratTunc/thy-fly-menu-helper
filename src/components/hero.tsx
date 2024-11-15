@@ -7,11 +7,12 @@ import { images } from './images';
 import Tesseract from 'tesseract.js';
 import Image from 'next/image';
 import type { StaticImageData } from 'next/image';
+import { ReactNode } from 'react';
 
 interface HeroProps {
   imgData: StaticImageData | string;
   imgAlt: string;
-  title: string;
+  title: ReactNode;  // Change from 'string' to 'ReactNode'
 }
 
 interface MenuItem {
