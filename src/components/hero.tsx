@@ -141,11 +141,12 @@ export default function Hero(props: HeroProps) {
     // Send the selected item(s) to the chatbot
     if (updatedSelectedMenuItems.length > 0) {
       const selectedItemsText = updatedSelectedMenuItems.map(item => item.name).join(', ');
-      const queryText = `I selected: ${selectedItemsText}`;
+      const queryText = `I selected: ${selectedItemsText}. Could you provide the diet properties, gluten-free status, and calorie values for them?`;
       setUserQuery(queryText);  // Update the user query
       handleUserQuery(queryText);  // Trigger the chatbot with the updated user input
     }
   };
+  
 
   const handleOutsideClick = (event: MouseEvent) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -169,6 +170,7 @@ export default function Hero(props: HeroProps) {
       }
     }
   };
+  
 
   
 
@@ -292,7 +294,7 @@ export default function Hero(props: HeroProps) {
     onKeyDown={(e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            handleUserQuery();  // Handle user query when 'Enter' is pressed
+            handleUserQuery(userQuery);  // Handle user query when 'Enter' is pressed
         } else if (e.key === 'Enter' && e.shiftKey) {
             setUserQuery((prev) => prev + '\n');
         }
