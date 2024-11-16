@@ -204,6 +204,29 @@ export default function Hero(props: HeroProps) {
     }
   };
   
+  
+  // Trigger SetCookieHandler on component load
+  useEffect(() => {
+    const setCookie = async () => {
+      try {
+        const response = await fetch('https://mutubackend.com:8000/set-cookie', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          console.log('Cookie set successfully');
+        } else {
+          console.error('Failed to set cookie');
+        }
+      } catch (error) {
+        console.error('Error setting cookie:', error);
+      }
+    };
+
+    setCookie(); // Trigger cookie setting on page load
+  }, []); // Empty dependency array ensures this runs once when the component mounts
+
 
   useEffect(() => {
     if (isDropdownOpen) {
