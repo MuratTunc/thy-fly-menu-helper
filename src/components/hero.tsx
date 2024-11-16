@@ -124,6 +124,7 @@ export default function Hero(props: HeroProps) {
         }
       };
     } catch (error) {
+      console.error('Error :extractTextFromImage', error);
       setLoading(false);
     }
   };
@@ -196,7 +197,7 @@ export default function Hero(props: HeroProps) {
   
         setAiResponse(response);  // Update UI with the AI response
       } catch (error) {
-        
+        console.error('Error :setAiResponse', error);
         setAiResponse('Sorry, there was an error with the AI service.');
         
       }
