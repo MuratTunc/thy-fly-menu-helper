@@ -198,6 +198,7 @@ export default function Hero(props: HeroProps) {
         setAiResponse(response);  // Update UI with the AI response
       } catch (error) {
         setAiResponse('Sorry, there was an error with the AI service.');
+        console.error('Error :setAiResponse', error);
       }
     }
   };
