@@ -70,8 +70,9 @@ export default function Hero(props: HeroProps) {
   
     // If OCR text is cached, use it
     if (ocrCache[image]) {
-      const translatedText = await translate(ocrCache[image], language);
-      parseMenuItems(translatedText);
+      // Only translate if the selected language is not English
+      const textToParse = language === 'en' ? ocrCache[image] : await translate(ocrCache[image], language);
+      parseMenuItems(textToParse);
       setLoading(false);
       return;
     }
@@ -106,9 +107,9 @@ export default function Hero(props: HeroProps) {
             ocrCache[image] = text;
             setOcrCache(ocrCache);
   
-            // Translate the text
-            const translatedText = await translate(text, language);
-            parseMenuItems(translatedText);
+            // If the language is not English, translate the text before parsing
+            const textToParse = language === 'en' ? text : await translate(text, language);
+            parseMenuItems(textToParse);
             setLoading(false);
           }
         }
@@ -118,16 +119,21 @@ export default function Hero(props: HeroProps) {
       setLoading(false);
     }
   };
+  
 
   const parseMenuItems = (text: string) => {
     const lines = text.split('\n');
     const items: MenuItem[] = [];
-
+  
     for (const line of lines) {
       const itemName = line.trim();
-      items.push({ name: itemName, description: '' });
+  
+      // Only add items that are longer than 1 character
+      if (itemName.length > 1) {
+        items.push({ name: itemName, description: '' });
+      }
     }
-
+  
     setMenuItems(items);
   };
 
@@ -235,90 +241,101 @@ export default function Hero(props: HeroProps) {
       </div>
 
       {/* Language Selection Button */}
-      <div className="flex justify-center mt-6">
-        <button
-          onClick={toggleDropdown}
-          className="bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-200 w-56" // w-56 for wider button
-          aria-expanded={isDropdownOpen}
-          aria-controls="language-dropdown"
+<div className="flex justify-center mt-6">
+  <button
+    onClick={toggleDropdown}
+    className="bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-200 w-56" // w-56 for wider button
+    aria-expanded={isDropdownOpen}
+    aria-controls="language-dropdown"
+  >
+    {getLanguageName(language)} {/* Display the selected language name */}
+  </button>
+  {isDropdownOpen && (
+    <div
+      id="language-dropdown"
+      ref={dropdownRef}
+      className="absolute mt-2 bg-white rounded-lg shadow-lg w-56 max-h-60 overflow-y-auto"
+    >
+      {languages.map((lang) => (
+        <div
+          key={lang.code}
+          className="p-2 hover:bg-gray-200 cursor-pointer"
+          onClick={() => handleLanguageSelect(lang.code)}
         >
-          {getLanguageName(language)} {/* Display the selected language name */}
-        </button>
-        {isDropdownOpen && (
-          <div
-            id="language-dropdown"
-            ref={dropdownRef}
-            className="absolute mt-2 bg-white rounded-lg shadow-lg w-56 max-h-60 overflow-y-auto"
+          {lang.name}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+{/* Selected Items Under Language Button */}
+<div className="flex justify-center mt-4">
+  {selectedMenuItems.length > 0 && (
+    <div className="text-white">
+      <ul className="list-none space-y-2">
+        {selectedMenuItems.map((item, index) => (
+          <li key={index} className="text-white font-bold">
+            {item.name}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>
+
+   
+
+       {/* Menu Items on the Right */}
+<div className="absolute right-0 bottom-20 w-1/3 max-w-lg px-6 overflow-y-auto max-h-80">
+  {loading ? (
+    <div className="text-center text-white font-bold">Loading...</div>
+  ) : (
+    <ul className="list-none space-y-4">
+      {menuItems.map((item, index) => (
+        <li
+          key={index}
+          className={`flex items-center justify-between text-white font-bold p-2 rounded-lg transition-colors ${
+            selectedItems.includes(index) ? 'bg-green-500' : 'bg-gray-700'
+          }`}
+        >
+          <span>{item.name}</span>
+          <button
+            onClick={() => toggleItemSelection(index)}
+            className={`p-2 rounded-lg transition-colors ${
+              selectedItems.includes(index) ? 'bg-green-500' : 'bg-gray-700'
+            }`}
           >
-            {languages.map((lang) => (
-              <div
-                key={lang.code}
-                className="p-2 hover:bg-gray-200 cursor-pointer"
-                onClick={() => handleLanguageSelect(lang.code)}
-              >
-                {lang.name}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+            {selectedItems.includes(index) ? 'Deselect' : 'Select'}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
 
-      {/* Selected Items Under Language Button */}
-      <div className="absolute right-0 top-36 w-1/3 max-w-lg px-6 max-h-40 overflow-y-auto">
-        {selectedMenuItems.length > 0 && (
-          <div className="text-white">
-            <h3 className="font-bold text-lg mb-2">Selected Items</h3>
-            <ul className="list-none space-y-2">
-              {selectedMenuItems.map((item, index) => (
-                <li key={index} className="text-white">
-                  {item.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-
-      {/* Menu Items on the Right */}
-      <div className="absolute right-0 bottom-20 w-1/3 max-w-lg px-6 overflow-y-auto max-h-80">
-        {loading ? (
-          <div className="text-center text-white">Loading...</div>
-        ) : (
-          <ul className="list-none space-y-4">
-            {menuItems.map((item, index) => (
-              <li key={index} className="flex items-center justify-between text-white">
-                <span>{item.name}</span>
-                <button
-                  onClick={() => toggleItemSelection(index)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    selectedItems.includes(index) ? 'bg-blue-500' : 'bg-gray-700'
-                  }`}
-                >
-                  {selectedItems.includes(index) ? 'Deselect' : 'Select'}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
 
       {/* User Input & AI Response */}
-      <div className="absolute bottom-5 left-5 right-5 bg-white p-4 rounded-lg shadow-lg max-w-lg mx-auto">
-        <textarea
-          value={userQuery}
-          onChange={(e) => setUserQuery(e.target.value)}
-          className="w-full p-2 border rounded-lg resize-none"
-          rows={3}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              handleUserQuery(userQuery);
-            }
-          }}
-          placeholder="Ask me about the menu..."
-        />
-        <div className="mt-4 text-gray-700">{aiResponse}</div>
-      </div>
+<div className="absolute bottom-5 left-5 right-5 bg-white p-4 rounded-lg shadow-lg max-w-lg mx-auto">
+  <textarea
+    value={userQuery}
+    onChange={(e) => setUserQuery(e.target.value)}
+    className="w-full p-2 border rounded-lg resize-none"
+    rows={3}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleUserQuery(userQuery);
+      }
+    }}
+    placeholder="Ask me about the menu..."
+  />
+  <div className="mt-4 text-gray-700 max-h-16 overflow-y-auto">
+    {aiResponse}
+  </div>
+</div>
+
+
     </div>
   );
 }
