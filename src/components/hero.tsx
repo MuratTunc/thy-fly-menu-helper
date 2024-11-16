@@ -107,10 +107,10 @@ export default function Hero(props: HeroProps) {
             ctx.drawImage(imgElement, cropX, 0, cropWidth, imageHeight, 0, 0, cropWidth, imageHeight);
   
             // Perform OCR using Tesseract
-            const { data: { text } } = await Tesseract.recognize(canvas, 'eng', { logger: (m) => console.log(m) });
+            const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
   
             // Adding a 5-second wait after OCR
-            await new Promise(resolve => setTimeout(resolve, 5000)); // 5000ms = 5 seconds
+            //await new Promise(resolve => setTimeout(resolve, 5000)); // 5000ms = 5 seconds
   
             // Cache the extracted text for future use
             ocrCache[image] = text;
@@ -124,7 +124,6 @@ export default function Hero(props: HeroProps) {
         }
       };
     } catch (error) {
-      console.error('Error extracting text from image:', error);
       setLoading(false);
     }
   };
@@ -188,16 +187,13 @@ export default function Hero(props: HeroProps) {
 
   const handleUserQuery = async (queryText: string) => {
     if (queryText.trim()) {
-      console.log('User Query:', queryText);  // Log user query to see if it's updating correctly
+      
       setAiResponse('AI is typing...');
   
       try {
         const response = await chatbotanswer(queryText);  // Pass the correct user input
-        console.log('AI Response:', response);  // Log AI response to check
-  
         setAiResponse(response);  // Update UI with the AI response
       } catch (error) {
-        console.error('Error fetching AI response:', error);
         setAiResponse('Sorry, there was an error with the AI service.');
       }
     }
@@ -217,37 +213,44 @@ export default function Hero(props: HeroProps) {
 
   return (
     <div className="relative h-screen">
-      {/* Background Image */}
-      <div className="absolute -z-10 inset-0">
-        <Image
-          src={props.imgData}
-          alt={props.imgAlt}
-          fill
-          priority
-          style={{ objectFit: 'cover' }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900" />
-      </div>
+  {/* Background Image */}
+  <div className="absolute -z-10 inset-0">
+    <Image
+      src={props.imgData}
+      alt={props.imgAlt}
+      fill
+      priority
+      style={{ objectFit: 'cover' }}
+    />
+    <div className="absolute inset-0 bg-gradient-to-r from-slate-900" />
+  </div>
+
+       {/* Loading Spinner */}
+  {loading && (
+    <div className="absolute inset-0 flex justify-center items-center z-20">
+      <div className="w-16 h-16 border-4 border-t-4 border-gray-300 rounded-e-md animate-spin"></div>
+    </div>
+  )}
 
       {/* Centered Title */}
-      <div className="pt-48 flex justify-center items-center">
-        <h1 className="text-white text-4xl sm:text-6xl">{props.title}</h1> {/* Adjusted title size */}
-      </div>
+  <div className={`pt-48 flex justify-center items-center ${loading ? 'opacity-50' : ''}`}>
+    <h1 className="text-white text-4xl sm:text-6xl">{props.title}</h1>
+  </div>
 
       {/* Centered Thumbnails */}
-      <div className="flex justify-center items-center gap-4 mt-6 flex-wrap">
-        {images.map((image) => (
-          <div key={image} onClick={() => handleImageClick(image)}>
-            <Image
-              src={image}
-              alt={image}
-              width={150}
-              height={100}
-              className="hover:scale-110 transition-transform"
-            />
-          </div>
-        ))}
+  <div className={`flex justify-center items-center gap-4 mt-6 flex-wrap ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
+    {images.map((image) => (
+      <div key={image} onClick={() => handleImageClick(image)}>
+        <Image
+          src={image}
+          alt={image}
+          width={150}
+          height={100}
+          className="hover:scale-110 transition-transform"
+        />
       </div>
+    ))}
+  </div>
 
       {/* Language Selection Button */}
 <div className="flex justify-center mt-6">
