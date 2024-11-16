@@ -124,6 +124,7 @@ export default function Hero(props: HeroProps) {
         }
       };
     } catch (error) {
+      console.error('Error extracting text from image:', error);
       setLoading(false);
     }
   };
@@ -192,6 +193,8 @@ export default function Hero(props: HeroProps) {
   
       try {
         const response = await chatbotanswer(queryText);  // Pass the correct user input
+
+  
         setAiResponse(response);  // Update UI with the AI response
       } catch (error) {
         setAiResponse('Sorry, there was an error with the AI service.');
