@@ -209,7 +209,7 @@ export default function Hero(props: HeroProps) {
   useEffect(() => {
     const setCookie = async () => {
       try {
-        const response = await fetch('https://mutubackend.com:8000/set-cookie', {
+        const response = await fetch('https://mutubackend.com/set-cookie', {
           method: 'GET',
           credentials: 'include',
         });
