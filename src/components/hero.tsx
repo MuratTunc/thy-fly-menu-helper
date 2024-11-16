@@ -8,6 +8,7 @@ import Tesseract from 'tesseract.js';
 import Image from 'next/image';
 import type { StaticImageData } from 'next/image';
 import { ReactNode } from 'react';
+import SetCookieOnLoad from './SetCookieOnLoad';  // Import the SetCookieOnLoad component
 
 interface HeroProps {
   imgData: StaticImageData | string;
@@ -205,27 +206,6 @@ export default function Hero(props: HeroProps) {
   };
   
   
-  // Trigger SetCookieHandler on component load
-  useEffect(() => {
-    const setCookie = async () => {
-      try {
-        const response = await fetch('https://mutubackend.com/set-cookie', {
-          method: 'GET',
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          console.log('Cookie set successfully');
-        } else {
-          console.error('Failed to set cookie');
-        }
-      } catch (error) {
-        console.error('Error setting cookie:', error);
-      }
-    };
-
-    setCookie(); // Trigger cookie setting on page load
-  }, []); // Empty dependency array ensures this runs once when the component mounts
 
 
   useEffect(() => {
@@ -241,6 +221,8 @@ export default function Hero(props: HeroProps) {
 
   return (
     <div className="relative h-screen">
+      {/* Set cookie on load */}
+      <SetCookieOnLoad /> {/* This will trigger the Set-Cookie request */}
   {/* Background Image */}
   <div className="absolute -z-10 inset-0">
     <Image
