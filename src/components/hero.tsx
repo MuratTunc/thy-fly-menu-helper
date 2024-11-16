@@ -126,7 +126,7 @@ export default function Hero(props: HeroProps) {
     setMenuItems(items);
   };
 
-  const toggleItemSelection = (index: number) => {
+  const toggleItemSelection = async (index: number): Promise<void> => {
     const updatedSelectedItems = selectedItems.includes(index)
       ? selectedItems.filter((i) => i !== index)
       : [...selectedItems, index];
@@ -141,11 +141,23 @@ export default function Hero(props: HeroProps) {
     // Send the selected item(s) to the chatbot
     if (updatedSelectedMenuItems.length > 0) {
       const selectedItemsText = updatedSelectedMenuItems.map(item => item.name).join(', ');
-      const queryText = `I selected: ${selectedItemsText}. Could you provide the diet properties, gluten-free status, and calorie values for them?`;
+       const text_helper="Could you provide the diet properties, gluten-free status, and calorie values for them?";
+      // Translate the text
+      const translatedHelper = await translate(text_helper, language);
+      await waitOneSecond();
+      const queryText = `${selectedItemsText}. ${translatedHelper}?`;
       setUserQuery(queryText);  // Update the user query
       handleUserQuery(queryText);  // Trigger the chatbot with the updated user input
     }
   };
+
+  function waitOneSecond(): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, 1000); // 1000 milliseconds = 1 second
+    });
+}
   
 
   const handleOutsideClick = (event: MouseEvent) => {
@@ -285,29 +297,29 @@ export default function Hero(props: HeroProps) {
       )}
 
       
-  {/* Chat Assistant at Bottom Center */}
-  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-96 p-3 bg-white rounded shadow-lg">
-  <textarea
-    placeholder="You can ask specific dietary properties about menu selections"
-    value={userQuery}
-    onChange={(e) => setUserQuery(e.target.value)}
-    onKeyDown={(e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleUserQuery(userQuery);  // Handle user query when 'Enter' is pressed
-        } else if (e.key === 'Enter' && e.shiftKey) {
-            setUserQuery((prev) => prev + '\n');
-        }
-    }}
-    className="w-full h-20 p-2 border rounded resize-none"
-  ></textarea>
+      {/* Chat Assistant at Bottom Center */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-[32rem] p-3 bg-white rounded shadow-lg">
+         <textarea
+           placeholder="You can ask specific dietary properties about menu selections"
+            value={userQuery}
+            onChange={(e) => setUserQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                 handleUserQuery(userQuery);  // Handle user query when 'Enter' is pressed
+              } else if (e.key === 'Enter' && e.shiftKey) {
+                  setUserQuery((prev) => prev + '\n');
+              }
+          }}
+          className="w-full h-20 p-2 border rounded resize-none"
+        ></textarea>
 
-  {aiResponse && (
-    <div className="mt-3 bg-gray-100 p-2 rounded text-gray-800">
-      {aiResponse}  {/* Display the AI response */}
+        {aiResponse && (
+          <div className="mt-3 bg-gray-100 p-2 rounded text-gray-800 max-h-32 overflow-y-auto">
+            {aiResponse}  {/* Display the AI response */}
+          </div>
+        )}
     </div>
-  )}
-</div>
 
 
       {/* Hidden Canvas */}
