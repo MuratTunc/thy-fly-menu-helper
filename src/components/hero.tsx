@@ -29,6 +29,8 @@ export default function Hero(props: HeroProps) {
   const [loading, setLoading] = useState(false);
   const [userQuery, setUserQuery] = useState(''); // State for user input
   const [aiResponse, setAiResponse] = useState<string>(''); // State for AI response
+  const [selectLabel, setSelectLabel] = useState('Select');
+  const [deselectLabel, setDeselectLabel] = useState('Deselect');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -44,9 +46,16 @@ export default function Hero(props: HeroProps) {
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
-  const handleLanguageSelect = (code: string) => {
+  const handleLanguageSelect = async (code: string) => {
     setLanguage(code);
     setIsDropdownOpen(false);
+  
+    // Translate the button labels
+    const translatedSelect = await translate('Select', code);
+    const translatedDeselect = await translate('Deselect', code);
+  
+    setSelectLabel(translatedSelect);
+    setDeselectLabel(translatedDeselect);
   };
 
   const getLanguageName = (code: string) => {
@@ -285,8 +294,7 @@ export default function Hero(props: HeroProps) {
 </div>
 
    
-
-       {/* Menu Items on the Right */}
+ {/* Menu Items on the Right */}
 <div className="absolute right-0 bottom-20 w-1/3 max-w-lg px-6 overflow-y-auto max-h-80">
   {loading ? (
     <div className="text-center text-white font-bold">Loading...</div>
@@ -295,18 +303,18 @@ export default function Hero(props: HeroProps) {
       {menuItems.map((item, index) => (
         <li
           key={index}
-          className={`flex items-center justify-between text-white font-bold p-2 rounded-lg transition-colors ${
-            selectedItems.includes(index) ? 'bg-green-500' : 'bg-gray-700'
+          className={`flex items-center justify-between font-bold ${
+            selectedItems.includes(index) ? 'bg-green-800 text-green-200' : 'text-white'
           }`}
         >
           <span>{item.name}</span>
           <button
             onClick={() => toggleItemSelection(index)}
             className={`p-2 rounded-lg transition-colors ${
-              selectedItems.includes(index) ? 'bg-green-500' : 'bg-gray-700'
+              selectedItems.includes(index) ? 'bg-blue-500' : 'bg-gray-700'
             }`}
           >
-            {selectedItems.includes(index) ? 'Deselect' : 'Select'}
+            {selectedItems.includes(index) ? deselectLabel : selectLabel}
           </button>
         </li>
       ))}
