@@ -8,7 +8,6 @@ import Tesseract from 'tesseract.js';
 import Image from 'next/image';
 import type { StaticImageData } from 'next/image';
 import { ReactNode } from 'react';
-import SetCookieOnLoad from './SetCookieOnLoad';  // Import the SetCookieOnLoad component
 
 interface HeroProps {
   imgData: StaticImageData | string;
@@ -65,6 +64,12 @@ export default function Hero(props: HeroProps) {
   };
 
   const handleImageClick = (image: string): void => {
+    // Remove the leading slash from the image name, if it exists
+    const imageName = image.replace(/^\/+/, '');
+  
+    // Log the cleaned image name to the console
+    console.log('Image clicked:', imageName);
+    
     // Clear previous selections and chatbot text
     setSelectedItems([]);
     setSelectedMenuItems([]);
@@ -72,113 +77,31 @@ export default function Hero(props: HeroProps) {
     setAiResponse('');
     
     setLoading(true);
-    extractTextFromImage(image);
+    fetchMenuItemsFromBackend(imageName); // Fetch menu items from the backend
   };
+  
 
-  const extractTextFromImage = async (image: string): Promise<void> => {
-    const timeout = setTimeout(() => {
-      console.log('OCR process took too long, stopping...');
-      setLoading(false); // Stop loading if OCR takes too long
-    }, 10000); // Timeout after 10 seconds
-  
-    console.log('Started extracting text from image', image);
-    const ocrCache = getOcrCache();
-    
-    if (ocrCache[image]) {
-      console.log('OCR cache found, using cached text');
-      const textToParse = language === 'en' ? ocrCache[image] : await translate(ocrCache[image], language);
-      parseMenuItems(textToParse);
-      clearTimeout(timeout); // Clear the timeout if we're using cached data
-      setLoading(false); // Make sure to stop loading
-      return;
-    }
-  
+  const fetchMenuItemsFromBackend = async (text: string): Promise<void> => {
     try {
-      const imgElement = document.createElement('img');
-      imgElement.src = image;
-  
-      imgElement.onload = async () => {
-        console.log('Image loaded');
-        const canvas = canvasRef.current;
-        if (canvas && imgElement.complete) {
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            const imageWidth = imgElement.width;
-            const imageHeight = imgElement.height;
-            
-            const cropX = imageWidth / 2;
-            const cropWidth = imageWidth / 2;
-  
-            // Resize image
-            const newWidth = 1000;  // Set new width for resizing
-            const newHeight = Math.floor((newWidth / imageWidth) * imageHeight);  // Maintain aspect ratio
-            canvas.width = newWidth;
-            canvas.height = newHeight;
-  
-            // Draw resized image to canvas
-            ctx.drawImage(imgElement, cropX, 0, cropWidth, imageHeight, 0, 0, newWidth, newHeight);
-  
-            // Apply grayscale
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-              const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-              data[i] = avg;        // Red
-              data[i + 1] = avg;    // Green
-              data[i + 2] = avg;    // Blue
-            }
-            ctx.putImageData(imageData, 0, 0);
-  
-            // Increase contrast
-            const contrast = 2; // Adjust contrast as needed
-            for (let i = 0; i < data.length; i += 4) {
-              data[i] = Math.min(255, Math.max(0, (data[i] - 128) * contrast + 128));
-              data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 128) * contrast + 128));
-              data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 128) * contrast + 128));
-            }
-            ctx.putImageData(imageData, 0, 0);
-  
-            // Thresholding (Binary image) to simplify OCR
-            const threshold = 128; // Adjust as needed
-            for (let i = 0; i < data.length; i += 4) {
-              const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-              const value = avg > threshold ? 255 : 0;
-              data[i] = value;     // Red
-              data[i + 1] = value; // Green
-              data[i + 2] = value; // Blue
-            }
-            ctx.putImageData(imageData, 0, 0);
-  
-            try {
-              console.log('Starting OCR process...');
-              const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
-              console.log('OCR result:', text);
-  
-              ocrCache[image] = text;
-              setOcrCache(ocrCache);
-  
-              const textToParse = language === 'en' ? text : await translate(text, language);
-              parseMenuItems(textToParse);
-              clearTimeout(timeout); // Clear the timeout once OCR completes
-              setLoading(false); // Stop loading when OCR finishes
-            } catch (ocrError) {
-              console.error('OCR Error:', ocrError);
-              clearTimeout(timeout); // Clear timeout if OCR fails
-              setLoading(false); // Ensure loading stops on error
-            }
-          }
-        }
-      };
+      const response = await fetch('https://mutubackend.com/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch menu items from the backend');
+      }
+
+      const extractedText = await response.json();
+      parseMenuItems(extractedText); // Assuming backend returns an array of menu items
+      setLoading(false); // Stop loading when the items are fetched
     } catch (error) {
-      console.error('Error in extractTextFromImage:', error);
-      clearTimeout(timeout); // Clear timeout if image processing fails
+      console.error('Error fetching menu items:', error);
       setLoading(false); // Ensure loading stops on error
     }
   };
   
-  
-  
-
   const parseMenuItems = (text: string) => {
     console.log('Parsing OCR text:', text);
     const lines = text.split('\n');
@@ -195,8 +118,7 @@ export default function Hero(props: HeroProps) {
     setMenuItems(items);
     setLoading(false);  // Ensure loading is false after parsing
   };
-  
-
+    
   const toggleItemSelection = async (index: number): Promise<void> => {
     const updatedSelectedItems = selectedItems.includes(index)
       ? selectedItems.filter((i) => i !== index)

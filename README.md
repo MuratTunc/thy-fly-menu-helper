@@ -24,7 +24,7 @@ In this study, the aim is to enable passengers to see the information written on
 
 > ## OCR Library
 >
-> - Tesseract JS
+> - Tesseract OCR in Back-End Server
 
 > ## Language Translate Library
 >
