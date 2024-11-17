@@ -96,7 +96,7 @@ export default function Hero(props: HeroProps) {
     try {
       const imgElement = document.createElement('img');
       imgElement.src = image;
-      
+  
       imgElement.onload = async () => {
         console.log('Image loaded');
         const canvas = canvasRef.current;
@@ -108,20 +108,55 @@ export default function Hero(props: HeroProps) {
             
             const cropX = imageWidth / 2;
             const cropWidth = imageWidth / 2;
-    
-            canvas.width = cropWidth;
-            canvas.height = imageHeight;
-    
-            ctx.drawImage(imgElement, cropX, 0, cropWidth, imageHeight, 0, 0, cropWidth, imageHeight);
-    
+  
+            // Resize image
+            const newWidth = 1000;  // Set new width for resizing
+            const newHeight = Math.floor((newWidth / imageWidth) * imageHeight);  // Maintain aspect ratio
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+  
+            // Draw resized image to canvas
+            ctx.drawImage(imgElement, cropX, 0, cropWidth, imageHeight, 0, 0, newWidth, newHeight);
+  
+            // Apply grayscale
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+              const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+              data[i] = avg;        // Red
+              data[i + 1] = avg;    // Green
+              data[i + 2] = avg;    // Blue
+            }
+            ctx.putImageData(imageData, 0, 0);
+  
+            // Increase contrast
+            const contrast = 2; // Adjust contrast as needed
+            for (let i = 0; i < data.length; i += 4) {
+              data[i] = Math.min(255, Math.max(0, (data[i] - 128) * contrast + 128));
+              data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 128) * contrast + 128));
+              data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 128) * contrast + 128));
+            }
+            ctx.putImageData(imageData, 0, 0);
+  
+            // Thresholding (Binary image) to simplify OCR
+            const threshold = 128; // Adjust as needed
+            for (let i = 0; i < data.length; i += 4) {
+              const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+              const value = avg > threshold ? 255 : 0;
+              data[i] = value;     // Red
+              data[i + 1] = value; // Green
+              data[i + 2] = value; // Blue
+            }
+            ctx.putImageData(imageData, 0, 0);
+  
             try {
               console.log('Starting OCR process...');
               const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
               console.log('OCR result:', text);
-    
+  
               ocrCache[image] = text;
               setOcrCache(ocrCache);
-    
+  
               const textToParse = language === 'en' ? text : await translate(text, language);
               parseMenuItems(textToParse);
               clearTimeout(timeout); // Clear the timeout once OCR completes
@@ -140,6 +175,7 @@ export default function Hero(props: HeroProps) {
       setLoading(false); // Ensure loading stops on error
     }
   };
+  
   
   
 
