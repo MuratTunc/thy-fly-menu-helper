@@ -271,8 +271,6 @@ export default function Hero(props: HeroProps) {
 
   return (
     <div className="relative h-screen">
-      {/* Set cookie on load */}
-      <SetCookieOnLoad /> {/* This will trigger the Set-Cookie request */}
   {/* Background Image */}
   <div className="absolute -z-10 inset-0">
     <Image
