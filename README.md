@@ -12,11 +12,6 @@ In this study, the aim is to enable passengers to see the information written on
 > - Ubuntu Linux Ubuntu 24.04.1 LTS
 > - VS Code.
 
-> ## Deployment Environment
->
-> - Vercel [https://vercel.com/]
-
-
 > ## Front-End Server
 >
 > - DigitalOcean Server Droplet-[https://www.thyflightmenuassistant.com/]
@@ -72,3 +67,7 @@ In my sample studies, the OPENCV algorithm results were very low in accuracy due
 
 ## General hierarchy of the project
 ![main.png](pictures/main_works.png)
+
+
+## Tech Stack of the project
+![main.png](pictures/tech_stack.png)
