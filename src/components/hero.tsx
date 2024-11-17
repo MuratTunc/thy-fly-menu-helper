@@ -76,76 +76,90 @@ export default function Hero(props: HeroProps) {
   };
 
   const extractTextFromImage = async (image: string): Promise<void> => {
-    const ocrCache = getOcrCache();
+    const timeout = setTimeout(() => {
+      console.log('OCR process took too long, stopping...');
+      setLoading(false); // Stop loading if OCR takes too long
+    }, 10000); // Timeout after 10 seconds
   
-    // If OCR text is cached, use it
+    console.log('Started extracting text from image', image);
+    const ocrCache = getOcrCache();
+    
     if (ocrCache[image]) {
-      // Only translate if the selected language is not English
+      console.log('OCR cache found, using cached text');
       const textToParse = language === 'en' ? ocrCache[image] : await translate(ocrCache[image], language);
       parseMenuItems(textToParse);
-      setLoading(false);
+      clearTimeout(timeout); // Clear the timeout if we're using cached data
+      setLoading(false); // Make sure to stop loading
       return;
     }
   
     try {
       const imgElement = document.createElement('img');
       imgElement.src = image;
-  
+      
       imgElement.onload = async () => {
+        console.log('Image loaded');
         const canvas = canvasRef.current;
         if (canvas && imgElement.complete) {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             const imageWidth = imgElement.width;
             const imageHeight = imgElement.height;
-  
+            
             const cropX = imageWidth / 2;
             const cropWidth = imageWidth / 2;
-  
+    
             canvas.width = cropWidth;
             canvas.height = imageHeight;
-  
+    
             ctx.drawImage(imgElement, cropX, 0, cropWidth, imageHeight, 0, 0, cropWidth, imageHeight);
-  
-            // Perform OCR using Tesseract
-            const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
-  
-            // Adding a 5-second wait after OCR
-            //await new Promise(resolve => setTimeout(resolve, 5000)); // 5000ms = 5 seconds
-  
-            // Cache the extracted text for future use
-            ocrCache[image] = text;
-            setOcrCache(ocrCache);
-  
-            // If the language is not English, translate the text before parsing
-            const textToParse = language === 'en' ? text : await translate(text, language);
-            parseMenuItems(textToParse);
-            setLoading(false);
+    
+            try {
+              console.log('Starting OCR process...');
+              const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
+              console.log('OCR result:', text);
+    
+              ocrCache[image] = text;
+              setOcrCache(ocrCache);
+    
+              const textToParse = language === 'en' ? text : await translate(text, language);
+              parseMenuItems(textToParse);
+              clearTimeout(timeout); // Clear the timeout once OCR completes
+              setLoading(false); // Stop loading when OCR finishes
+            } catch (ocrError) {
+              console.error('OCR Error:', ocrError);
+              clearTimeout(timeout); // Clear timeout if OCR fails
+              setLoading(false); // Ensure loading stops on error
+            }
           }
         }
       };
     } catch (error) {
-      console.error('Error :extractTextFromImage', error);
-      setLoading(false);
+      console.error('Error in extractTextFromImage:', error);
+      clearTimeout(timeout); // Clear timeout if image processing fails
+      setLoading(false); // Ensure loading stops on error
     }
   };
   
+  
 
   const parseMenuItems = (text: string) => {
+    console.log('Parsing OCR text:', text);
     const lines = text.split('\n');
     const items: MenuItem[] = [];
   
     for (const line of lines) {
       const itemName = line.trim();
-  
-      // Only add items that are longer than 1 character
       if (itemName.length > 1) {
         items.push({ name: itemName, description: '' });
       }
     }
   
+    console.log('Parsed menu items:', items);
     setMenuItems(items);
+    setLoading(false);  // Ensure loading is false after parsing
   };
+  
 
   const toggleItemSelection = async (index: number): Promise<void> => {
     const updatedSelectedItems = selectedItems.includes(index)
