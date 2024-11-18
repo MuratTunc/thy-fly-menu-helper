@@ -66,20 +66,17 @@ export default function Hero(props: HeroProps) {
     setAiResponse('');
     
     setLoading(true);
-    fetchMenuItemsFromBackend(imageName); // Fetch menu items from the backend
+    fetchMenuItemsFromBackend(imageName,language); // Fetch menu items from the backend
   };
   
 
-  const fetchMenuItemsFromBackend = async (text: string): Promise<void> => {
+  const fetchMenuItemsFromBackend = async (text: string, language: string): Promise<void> => {
     try {
       const response = await fetch('https://mutubackend.com/upload-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, language }), // Replaced "to" with "lang_code"
       });
-  
-      // Log the response status or headers if needed, but avoid consuming the body twice
-      //console.log('Response status:', response.status);
   
       if (!response.ok) {
         throw new Error('Failed to fetch menu items from the backend');
@@ -87,7 +84,7 @@ export default function Hero(props: HeroProps) {
   
       // Parse the response body
       const extractedText = await response.json();
-      //console.log('Extracted Text:', extractedText); // Log the parsed JSON for debugging
+      // console.log('Extracted Text:', extractedText); // Log the parsed JSON for debugging
   
       parseMenuItems(extractedText); // Assuming backend returns an array of menu items
       setLoading(false); // Stop loading when the items are fetched
@@ -96,6 +93,7 @@ export default function Hero(props: HeroProps) {
       setLoading(false); // Ensure loading stops on error
     }
   };
+  
   
 // Define the type for ocrData
 interface OcrData {
