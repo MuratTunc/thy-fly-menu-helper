@@ -32,15 +32,6 @@ export default function Hero(props: HeroProps) {
   const [deselectLabel, setDeselectLabel] = useState('Deselect');
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  // Cache for OCR results, using localStorage
-  const getOcrCache = () => {
-    const cache = localStorage.getItem('ocrCache');
-    return cache ? JSON.parse(cache) : {};
-  };
-
-  const setOcrCache = (cache: { [key: string]: string }) => {
-    localStorage.setItem('ocrCache', JSON.stringify(cache));
-  };
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
@@ -101,13 +92,17 @@ export default function Hero(props: HeroProps) {
       parseMenuItems(extractedText); // Assuming backend returns an array of menu items
       setLoading(false); // Stop loading when the items are fetched
     } catch (error) {
-      //console.error('Error fetching menu items:', error);
+      console.error('Error fetching menu items:', error);
       setLoading(false); // Ensure loading stops on error
     }
   };
   
-  
- const parseMenuItems = async (ocrData: any) => {
+// Define the type for ocrData
+interface OcrData {
+  extracted_text: string; // Define that extracted_text is a string
+}
+
+const parseMenuItems = async (ocrData: OcrData) => {
   const extractedText = ocrData.extracted_text; // Safely access the extracted text
   
   if (typeof extractedText !== "string") {
@@ -142,8 +137,6 @@ export default function Hero(props: HeroProps) {
 
     // Update the state with the parsed menu items
     setMenuItems(parsedItems);
-
-
   } catch (error) {
     console.error("Error translating menu items:", error);
   }
@@ -202,7 +195,7 @@ export default function Hero(props: HeroProps) {
   
         setAiResponse(response);  // Update UI with the AI response
       } catch (error) {
-        //console.error('Error :setAiResponse', error);
+        console.error('Error :setAiResponse', error);
         setAiResponse('Sorry, there was an error with the AI service.');
         
       }
