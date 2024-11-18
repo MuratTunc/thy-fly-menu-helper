@@ -31,7 +31,6 @@ export default function Hero(props: HeroProps) {
   const [aiResponse, setAiResponse] = useState<string>(''); // State for AI response
   const [selectLabel, setSelectLabel] = useState('Select');
   const [deselectLabel, setDeselectLabel] = useState('Deselect');
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   // Cache for OCR results, using localStorage
@@ -86,38 +85,58 @@ export default function Hero(props: HeroProps) {
       const response = await fetch('https://mutubackend.com/upload-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text }),
       });
-
+  
+      // Log the response status or headers if needed, but avoid consuming the body twice
+      //console.log('Response status:', response.status);
+  
       if (!response.ok) {
         throw new Error('Failed to fetch menu items from the backend');
       }
-
+  
+      // Parse the response body
       const extractedText = await response.json();
+      //console.log('Extracted Text:', extractedText); // Log the parsed JSON for debugging
+  
       parseMenuItems(extractedText); // Assuming backend returns an array of menu items
       setLoading(false); // Stop loading when the items are fetched
     } catch (error) {
-      console.error('Error fetching menu items:', error);
+      //console.error('Error fetching menu items:', error);
       setLoading(false); // Ensure loading stops on error
     }
   };
   
-  const parseMenuItems = (text: string) => {
-    console.log('Parsing OCR text:', text);
-    const lines = text.split('\n');
-    const items: MenuItem[] = [];
   
-    for (const line of lines) {
-      const itemName = line.trim();
-      if (itemName.length > 1) {
-        items.push({ name: itemName, description: '' });
-      }
+  const parseMenuItems = (ocrData: any) => {
+    const extractedText = ocrData.extracted_text; // Safely access the extracted text
+    
+    if (typeof extractedText !== "string") {
+      console.error("Invalid OCR data format, extracted_text is not a string:", extractedText);
+      return;
     }
   
-    console.log('Parsed menu items:', items);
-    setMenuItems(items);
-    setLoading(false);  // Ensure loading is false after parsing
+    // Split the text into lines and clean them
+    const lines = extractedText
+      .split('\n')        // Split into lines
+      .map(line => line.trim()) // Trim whitespace
+      .filter(line => line);    // Remove empty lines
+    
+    //console.log("Parsed lines:", lines);
+  
+    // Convert each line into a MenuItem object
+    const parsedItems: MenuItem[] = lines.map(line => {
+      const [name, ...descriptionParts] = line.split('-'); // Split by a delimiter like "-"
+      const description = descriptionParts.join('-').trim(); // Rejoin and trim the description
+      return { name: name.trim(), description };
+    });
+  
+    //console.log("Parsed menu items:", parsedItems);
+  
+    // Update the state with the parsed menu items
+    setMenuItems(parsedItems);
   };
+  
     
   const toggleItemSelection = async (index: number): Promise<void> => {
     const updatedSelectedItems = selectedItems.includes(index)
@@ -170,7 +189,7 @@ export default function Hero(props: HeroProps) {
   
         setAiResponse(response);  // Update UI with the AI response
       } catch (error) {
-        console.error('Error :setAiResponse', error);
+        //console.error('Error :setAiResponse', error);
         setAiResponse('Sorry, there was an error with the AI service.');
         
       }
