@@ -4,7 +4,6 @@ import { translate } from './translate';
 import { languages } from './languages';
 import { chatbotanswer } from './chatbotanswer';
 import { images } from './images';
-import Tesseract from 'tesseract.js';
 import Image from 'next/image';
 import type { StaticImageData } from 'next/image';
 import { ReactNode } from 'react';
@@ -108,34 +107,48 @@ export default function Hero(props: HeroProps) {
   };
   
   
-  const parseMenuItems = (ocrData: any) => {
-    const extractedText = ocrData.extracted_text; // Safely access the extracted text
-    
-    if (typeof extractedText !== "string") {
-      console.error("Invalid OCR data format, extracted_text is not a string:", extractedText);
-      return;
-    }
+ const parseMenuItems = async (ocrData: any) => {
+  const extractedText = ocrData.extracted_text; // Safely access the extracted text
   
-    // Split the text into lines and clean them
-    const lines = extractedText
-      .split('\n')        // Split into lines
-      .map(line => line.trim()) // Trim whitespace
-      .filter(line => line);    // Remove empty lines
-    
-    //console.log("Parsed lines:", lines);
-  
-    // Convert each line into a MenuItem object
-    const parsedItems: MenuItem[] = lines.map(line => {
+  if (typeof extractedText !== "string") {
+    console.error("Invalid OCR data format, extracted_text is not a string:", extractedText);
+    return;
+  }
+
+  // Split the text into lines and clean them
+  const lines = extractedText
+    .split('\n')        // Split into lines
+    .map(line => line.trim()) // Trim whitespace
+    .filter(line => line);    // Remove empty lines
+
+  console.log("Parsed lines:", lines);
+
+  try {
+    // Translate each line
+    const translatedLines = await Promise.all(
+      lines.map(async (line) => {
+        return await translate(line, language); // Translate the line into the selected language
+      })
+    );
+
+    console.log("Translated lines:", translatedLines);
+
+    // Convert each translated line into a MenuItem object
+    const parsedItems: MenuItem[] = translatedLines.map(line => {
       const [name, ...descriptionParts] = line.split('-'); // Split by a delimiter like "-"
       const description = descriptionParts.join('-').trim(); // Rejoin and trim the description
       return { name: name.trim(), description };
     });
-  
-    //console.log("Parsed menu items:", parsedItems);
-  
+
     // Update the state with the parsed menu items
     setMenuItems(parsedItems);
-  };
+
+
+  } catch (error) {
+    console.error("Error translating menu items:", error);
+  }
+};
+
   
     
   const toggleItemSelection = async (index: number): Promise<void> => {
