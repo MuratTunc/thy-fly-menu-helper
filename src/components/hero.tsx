@@ -94,15 +94,14 @@ export default function Hero(props: HeroProps) {
     }
   };
   
-  
-// Define the type for ocrData
+// Define the type for OCR data
 interface OcrData {
   extracted_text: string; // Define that extracted_text is a string
 }
 
-const parseMenuItems = async (ocrData: OcrData) => {
+const parseMenuItems = (ocrData: OcrData) => {
   const extractedText = ocrData.extracted_text; // Safely access the extracted text
-  
+
   if (typeof extractedText !== "string") {
     console.error("Invalid OCR data format, extracted_text is not a string:", extractedText);
     return;
@@ -111,34 +110,25 @@ const parseMenuItems = async (ocrData: OcrData) => {
   // Split the text into lines and clean them
   const lines = extractedText
     .split('\n')        // Split into lines
-    .map(line => line.trim()) // Trim whitespace
-    .filter(line => line);    // Remove empty lines
+    .map((line) => line.trim()) // Trim whitespace
+    .filter((line) => line);    // Remove empty lines
 
   console.log("Parsed lines:", lines);
 
-  try {
-    // Translate each line
-    const translatedLines = await Promise.all(
-      lines.map(async (line) => {
-        return await translate(line, language); // Translate the line into the selected language
-      })
-    );
+  // Convert each line into a MenuItem object
+  const parsedItems: MenuItem[] = lines.map((line) => {
+    const [name, ...descriptionParts] = line.split('-'); // Split by a delimiter like "-"
+    const description = descriptionParts.join('-').trim(); // Rejoin and trim the description
+    return { name: name.trim(), description };
+  });
 
-    console.log("Translated lines:", translatedLines);
+  // Log the parsed items for debugging
+  console.log("Parsed menu items:", parsedItems);
 
-    // Convert each translated line into a MenuItem object
-    const parsedItems: MenuItem[] = translatedLines.map(line => {
-      const [name, ...descriptionParts] = line.split('-'); // Split by a delimiter like "-"
-      const description = descriptionParts.join('-').trim(); // Rejoin and trim the description
-      return { name: name.trim(), description };
-    });
-
-    // Update the state with the parsed menu items
-    setMenuItems(parsedItems);
-  } catch (error) {
-    console.error("Error translating menu items:", error);
-  }
+  // Update the state with the parsed menu items
+  setMenuItems(parsedItems);
 };
+
 
   
     
