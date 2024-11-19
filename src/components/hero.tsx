@@ -70,64 +70,91 @@ export default function Hero(props: HeroProps) {
   };
   
 
-  const fetchMenuItemsFromBackend = async (text: string, language: string): Promise<void> => {
+  const fetchMenuItemsFromBackend = async (imageName: string, language_code: string): Promise<void> => {
     try {
       const response = await fetch('https://mutubackend.com/upload-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, language }), // Replaced "to" with "lang_code"
+        body: JSON.stringify({
+          imageName: imageName,
+          language_code: language_code,
+        }),
       });
   
       if (!response.ok) {
         throw new Error('Failed to fetch menu items from the backend');
       }
   
-      // Parse the response body
-      const extractedText = await response.json();
-      // console.log('Extracted Text:', extractedText); // Log the parsed JSON for debugging
+      // Parse the JSON response
+      const data = await response.json();
+      console.log('Backend Response:', data); // Debugging
   
-      parseMenuItems(extractedText); // Assuming backend returns an array of menu items
-      setLoading(false); // Stop loading when the items are fetched
+      // Ensure `translatedText` exists and is a string
+      if (data.translatedText && typeof data.translatedText === 'string') {
+        parseMenuItems(data.translatedText); // Pass the translated text to `parseMenuItems`
+      } else {
+        console.error('Unexpected response structure:', data);
+      }
+  
+      setLoading(false); // Stop loading after fetching
     } catch (error) {
       console.error('Error fetching menu items:', error);
       setLoading(false); // Ensure loading stops on error
     }
   };
   
-// Define the type for OCR data
-interface OcrData {
-  extracted_text: string; // Define that extracted_text is a string
-}
 
-const parseMenuItems = (ocrData: OcrData) => {
-  const extractedText = ocrData.extracted_text; // Safely access the extracted text
-
-  if (typeof extractedText !== "string") {
-    console.error("Invalid OCR data format, extracted_text is not a string:", extractedText);
-    return;
-  }
-
-  // Split the text into lines and clean them
-  const lines = extractedText
-    .split('\n')        // Split into lines
-    .map((line) => line.trim()) // Trim whitespace
-    .filter((line) => line);    // Remove empty lines
-
-  console.log("Parsed lines:", lines);
-
-  // Convert each line into a MenuItem object
-  const parsedItems: MenuItem[] = lines.map((line) => {
-    const [name, ...descriptionParts] = line.split('-'); // Split by a delimiter like "-"
-    const description = descriptionParts.join('-').trim(); // Rejoin and trim the description
-    return { name: name.trim(), description };
-  });
-
-  // Log the parsed items for debugging
-  console.log("Parsed menu items:", parsedItems);
-
-  // Update the state with the parsed menu items
-  setMenuItems(parsedItems);
-};
+  const parseMenuItems = (extractedText: string) => {
+    if (typeof extractedText !== 'string') {
+      console.error('Invalid extracted text format:', extractedText);
+      return;
+    }
+  
+    // Split text into clean lines
+    const lines = extractedText
+      .split('\n') // Split by newlines
+      .map((line) => line.trim()) // Remove extra spaces
+      .filter((line) => line.length > 0); // Remove empty lines
+  
+    //console.log('Parsed Lines:', lines);
+  
+    // Parsing logic to construct menu items
+    const parsedItems: MenuItem[] = [];
+    let currentItem: MenuItem | null = null;
+  
+    for (const line of lines) {
+      // Skip irrelevant headers or sections
+      if (line.match(/menu|Your selection will be served with pleasure by our cabin crew|at your preferred time|dine on demand|before landing|prepared in accordance|thank you/i)) {
+        continue;
+      }
+  
+      if (line.includes('-')) {
+        // Split lines with `-` into name and description
+        const [name, ...descriptionParts] = line.split('-');
+        currentItem = {
+          name: name.trim(),
+          description: descriptionParts.join('-').trim(),
+        };
+        parsedItems.push(currentItem);
+      } else if (currentItem) {
+        // Append additional lines to the description
+        currentItem.description += ` ${line}`;
+      } else {
+        // Treat standalone lines as menu items with no description
+        parsedItems.push({
+          name: line,
+          description: '',
+        });
+      }
+    }
+  
+    //console.log('Parsed Menu Items:', parsedItems);
+    setMenuItems(parsedItems); // Update the state
+  };
+  
+  
+  
+  
 
 
   
