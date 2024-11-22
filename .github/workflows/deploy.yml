@@ -30,10 +30,12 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          # Define server and project parameters
+          # Define server, project parameters, and repository name
           SERVER_IP="${{ secrets.SERVER_IP }}"
           USER_NAME="${{ secrets.USER_NAME }}"
           FRONTEND_DIR="/var/www/frontend"
+          REPO_NAME="${{ secrets.REPO_NAME }}"  # GitHub repository name as a secret
+          PROJECT_DIR="/home/mutu/project-frontend"  # Specify the project directory
 
           echo "Deploying frontend to the server..."
           ssh -T -o StrictHostKeyChecking=no $USER_NAME@$SERVER_IP << EOF
@@ -48,18 +50,18 @@ jobs:
             fi
 
             # Check if the project directory exists
-            if [ ! -d "/home/mutu/project-frontend" ]; then
+            if [ ! -d "$PROJECT_DIR" ]; then
               echo "Directory does not exist. Cloning repository..."
-              git clone git@github.com:MuratTunc/project-frontend.git /home/mutu/project-frontend
+              git clone git@github.com:MuratTunc/$REPO_NAME.git $PROJECT_DIR
             else
               echo "Directory exists. Pulling latest changes..."
-              cd /home/mutu/project-frontend
+              cd $PROJECT_DIR
               git reset --hard
               git pull origin main
             fi
 
             # Navigate to the project directory
-            cd /home/mutu/project-frontend
+            cd $PROJECT_DIR
 
             # Install dependencies
             echo "Installing dependencies..."
