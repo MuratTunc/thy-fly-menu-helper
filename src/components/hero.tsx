@@ -72,7 +72,7 @@ export default function Hero(props: HeroProps) {
 
   const fetchMenuItemsFromBackend = async (imageName: string, language_code: string): Promise<void> => {
     try {
-      const response = await fetch('https://mutubackend.com/upload-image', {
+      const response = await fetch('http://mutubackend.com/upload-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

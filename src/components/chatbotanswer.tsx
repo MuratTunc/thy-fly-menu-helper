@@ -8,7 +8,7 @@ export async function chatbotanswer(text: string): Promise<string> {
     try {
         console.log('Sending to server:', text);  // Log to see if the input is correct
 
-        const response = await fetch('https://mutubackend.com/openai', {
+        const response = await fetch('http://mutubackend.com/openai', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text })
