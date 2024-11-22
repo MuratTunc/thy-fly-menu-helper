@@ -63,8 +63,10 @@ jobs:
             # Navigate to the project directory
             cd $PROJECT_DIR
 
-            # Install latest npm version
+            # Install latest npm version globally for root user
             echo "Installing the latest version of npm..."
+            sudo apt-get update -y
+            sudo apt-get install -y npm
             sudo npm install -g npm@latest || { echo "npm install failed!"; exit 1; }
 
             # Install dependencies
