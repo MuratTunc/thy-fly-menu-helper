@@ -87,7 +87,7 @@ export default function Hero(props: HeroProps) {
   
       // Parse the JSON response
       const data = await response.json();
-      console.log('Backend Response:', data); // Debugging
+      //console.log('Backend Response:', data); // Debugging
   
       // Ensure `translatedText` exists and is a string
       if (data.translatedText && typeof data.translatedText === 'string') {
@@ -96,7 +96,6 @@ export default function Hero(props: HeroProps) {
         console.error('Unexpected response structure:', data);
       }
   
-      setLoading(false); // Stop loading after fetching
     } catch (error) {
       console.error('Error fetching menu items:', error);
       setLoading(false); // Ensure loading stops on error
@@ -124,9 +123,9 @@ export default function Hero(props: HeroProps) {
   
     for (const line of lines) {
       // Skip irrelevant headers or sections
-      if (line.match(/menu|Your selection will be served with pleasure by our cabin crew|at your preferred time|dine on demand|before landing|prepared in accordance|thank you/i)) {
-        continue;
-      }
+      //if (line.match(/menu|Your selection will be served with pleasure by our cabin crew|at your preferred time|dine on demand|before landing|prepared in accordance|thank you/i)) {
+        //continue;
+      //}
   
       if (line.includes('-')) {
         // Split lines with `-` into name and description
@@ -150,15 +149,9 @@ export default function Hero(props: HeroProps) {
   
     //console.log('Parsed Menu Items:', parsedItems);
     setMenuItems(parsedItems); // Update the state
+    setLoading(false); // Stop loading
   };
   
-  
-  
-  
-
-
-  
-    
   const toggleItemSelection = async (index: number): Promise<void> => {
     const updatedSelectedItems = selectedItems.includes(index)
       ? selectedItems.filter((i) => i !== index)

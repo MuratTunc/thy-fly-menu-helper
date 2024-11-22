@@ -1,0 +1,83 @@
+name: Deploy Frontend to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        continue-on-error: false # Ensure this step fails the job if it fails
+        id: checkout
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+        continue-on-error: false
+        id: setup_ssh
+
+      - name: Add host to known hosts
+        run: |
+          echo "Adding host to known hosts..."
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts || { echo "Failed to add host to known hosts"; exit 1; }
+
+      - name: Deploy to Server
+        run: |
+          # Define server and project parameters
+          SERVER_IP="${{ secrets.SERVER_IP }}"
+          USER_NAME="${{ secrets.USER_NAME }}"
+          FRONTEND_DIR="/var/www/frontend"
+
+          echo "Deploying frontend to the server..."
+          ssh -T -o StrictHostKeyChecking=no $USER_NAME@$SERVER_IP << EOF
+            set -e  # Exit on any error
+
+            # Check if /var/www/frontend directory exists, if not create it
+            if [ ! -d "$FRONTEND_DIR" ]; then
+              echo "$FRONTEND_DIR does not exist. Creating the directory..."
+              sudo mkdir -p $FRONTEND_DIR
+            else
+              echo "$FRONTEND_DIR exists."
+            fi
+
+            # Check if the project directory exists
+            if [ ! -d "/home/mutu/project-frontend" ]; then
+              echo "Directory does not exist. Cloning repository..."
+              git clone git@github.com:MuratTunc/project-frontend.git /home/mutu/project-frontend
+            else
+              echo "Directory exists. Pulling latest changes..."
+              cd /home/mutu/project-frontend
+              git reset --hard
+              git pull origin main
+            fi
+
+            # Navigate to the project directory
+            cd /home/mutu/project-frontend
+
+            # Install dependencies
+            echo "Installing dependencies..."
+            npm install || { echo "npm install failed!"; exit 1; }
+
+            # Build the project
+            echo "Building the project..."
+            npm run build || { echo "npm run build failed!"; exit 1; }
+
+            # Copy build files to the frontend directory
+            echo "Copying build files to the server directory..."
+            sudo rm -rf $FRONTEND_DIR/*
+            sudo cp -R ./out/* $FRONTEND_DIR/
+
+            # Set permissions (optional)
+            sudo chown -R www-data:www-data $FRONTEND_DIR
+
+            # Restart Nginx to apply changes
+            echo "Restarting Nginx..."
+            sudo systemctl restart nginx || { echo "Failed to restart Nginx!"; exit 1; }
+          EOF
