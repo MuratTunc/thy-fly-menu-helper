@@ -32,10 +32,9 @@ jobs:
         run: |
           # Define server and project parameters
           SERVER_IP="${{ secrets.SERVER_IP }}"
-          USER_NAME="mutu"
+          USER_NAME="${{ secrets.USER_NAME }}"
           FRONTEND_DIR="/var/www/frontend"
           PROJECT_DIR="/home/mutu/project-frontend"
-          REPO_NAME="git@github.com:MuratTunc/thy-fly-menu-helper.git"
 
           echo "Deploying frontend to the server..."
           ssh -T -o StrictHostKeyChecking=no $USER_NAME@$SERVER_IP << EOF
@@ -52,7 +51,7 @@ jobs:
             # Check if the project directory exists
             if [ ! -d "$PROJECT_DIR" ]; then
               echo "Directory does not exist. Cloning repository..."
-              git clone $REPO_NAME $PROJECT_DIR
+              git clone git@github.com:MuratTunc/thy-fly-menu-helper.git $PROJECT_DIR
             else
               echo "Directory exists. Pulling latest changes..."
               cd $PROJECT_DIR
@@ -63,24 +62,17 @@ jobs:
             # Navigate to the project directory
             cd $PROJECT_DIR
 
-            # Check if npm is installed
-            if ! command -v npm &> /dev/null; then
+            # Install dependencies if npm is not installed
+            if ! command -v npm &> /dev/null
+            then
               echo "npm not found. Installing npm..."
-              sudo apt-get update -y
-              sudo apt-get install -y npm
+              sudo apt update
+              sudo apt install -y npm
             else
               echo "npm is already installed."
             fi
 
-            # Check if Node.js is installed
-            if ! command -v node &> /dev/null; then
-              echo "Node.js not found. Installing Node.js..."
-              sudo apt-get install -y nodejs
-            else
-              echo "Node.js is already installed."
-            fi
-
-            # Install dependencies
+            # Install project dependencies
             echo "Installing dependencies..."
             npm install || { echo "npm install failed!"; exit 1; }
 
@@ -88,7 +80,7 @@ jobs:
             echo "Building the project..."
             npm run build || { echo "npm run build failed!"; exit 1; }
 
-            # Export the project (create the 'out' directory)
+            # Export the project
             echo "Exporting the project..."
             npm run export || { echo "npm run export failed!"; exit 1; }
 
