@@ -80,10 +80,6 @@ jobs:
             echo "Building the project..."
             npm run build || { echo "npm run build failed!"; exit 1; }
 
-            # Export the project
-            echo "Exporting the project..."
-            npm run export || { echo "npm run export failed!"; exit 1; }
-
             # Copy build files to the frontend directory
             echo "Copying build files to the server directory..."
             sudo rm -rf $FRONTEND_DIR/*
