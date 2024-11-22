@@ -63,11 +63,22 @@ jobs:
             # Navigate to the project directory
             cd $PROJECT_DIR
 
-            # Install latest npm version globally for root user
-            echo "Installing the latest version of npm..."
-            sudo apt-get update -y
-            sudo apt-get install -y npm
-            sudo npm install -g npm@latest || { echo "npm install failed!"; exit 1; }
+            # Check if npm is installed
+            if ! command -v npm &> /dev/null; then
+              echo "npm not found. Installing npm..."
+              sudo apt-get update -y
+              sudo apt-get install -y npm
+            else
+              echo "npm is already installed."
+            fi
+
+            # Check if Node.js is installed
+            if ! command -v node &> /dev/null; then
+              echo "Node.js not found. Installing Node.js..."
+              sudo apt-get install -y nodejs
+            else
+              echo "Node.js is already installed."
+            fi
 
             # Install dependencies
             echo "Installing dependencies..."
@@ -76,6 +87,10 @@ jobs:
             # Build the project
             echo "Building the project..."
             npm run build || { echo "npm run build failed!"; exit 1; }
+
+            # Export the project (create the 'out' directory)
+            echo "Exporting the project..."
+            npm run export || { echo "npm run export failed!"; exit 1; }
 
             # Copy build files to the frontend directory
             echo "Copying build files to the server directory..."
