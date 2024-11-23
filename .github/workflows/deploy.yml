@@ -48,7 +48,6 @@ jobs:
             fi
 
             # Navigate to the project directory or clone if it doesn't exist
-            # Navigate to the project directory or clone if it doesn't exist
             echo "Checking if project directory exists..."
             if [ ! -d "$PROJECT_DIR" ]; then
               echo "Creating project directory..."
