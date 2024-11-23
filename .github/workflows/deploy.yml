@@ -35,6 +35,7 @@ jobs:
           USER_NAME_SERVER="${{ secrets.USER_NAME_SERVER }}"
           SERVER_PROJECT_DIR="${{ secrets.SERVER_PROJECT_DIR }}"
           REPO="${{ secrets.REPO }}"
+          APPLICATION="${{ secrets.APPLICATION }}"
 
           # Debugging: Print PROJECT_DIR to check if it's set correctly
           echo "SERVER_PROJECT_DIR: $SERVER_PROJECT_DIR"
@@ -62,9 +63,9 @@ jobs:
 
             # Stop the running application (if it exists)
             echo "Checking if the application is running..."
-            if pm2 list | grep -q "thyflightmenujs-app"; then
+            if pm2 list | grep -q "$APPLICATION"; then
               echo "Application is running. Stopping it..."
-              pm2 stop thyflightmenujs-app
+              pm2 stop "$APPLICATION"
             else
               echo "Application is not running. Proceeding..."
             fi
@@ -96,7 +97,7 @@ jobs:
 
             # Start or reload the application with PM2
             echo "Starting the application with PM2..."
-            pm2 start npm --name "thyflightmenujs-app" -- start || pm2 restart "thyflightmenujs-app"
+            pm2 start npm --name "$APPLICATION" -- start || pm2 restart "$APPLICATION"
             pm2 save
 
             # Confirm PM2 status
