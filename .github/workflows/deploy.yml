@@ -17,7 +17,7 @@ jobs:
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_KEY }}
         id: setup_ssh
 
       - name: Test SSH connection
@@ -33,14 +33,7 @@ jobs:
         run: |
           SERVER_IP="${{ secrets.SERVER_IP }}"
           USER_NAME_SERVER="${{ secrets.USER_NAME_SERVER }}"
-          PROJECT_DIR="${{ secrets.PROJECT_DIR }}"
-          USER_NAME_GITHUB="${{ secrets.USER_NAME_GITHUB }}"  # GitHub username secret
-          REPO_NAME="thy-fly-menu-helper"  # Hardcoded repository name
-
-          echo "Connecting to server $USER_NAME_SERVER@$SERVER_IP"
-          echo "Cloning repository from git@github.com:$USER_NAME_GITHUB/$REPO_NAME.git"
-          echo "Full clone URL: git@github.com:$USER_NAME_GITHUB/$REPO_NAME.git"
-
+    
           ssh -T $USER_NAME_SERVER@$SERVER_IP << 'EOF'
             set -e
 
@@ -57,16 +50,16 @@ jobs:
             echo "Checking if project directory exists..."
             if [ ! -d "$PROJECT_DIR" ]; then
               echo "Cloning repository..."
-              git clone git@github.com:$USER_NAME_GITHUB/$REPO_NAME.git $PROJECT_DIR
+              git clone git@github.com:MuratTunc/thy-fly-menu-helper.git /home/mutu/project-frontend/thy-fly-menu-helper
             else
               echo "Project directory exists. Pulling latest changes..."
-              cd $PROJECT_DIR
+              cd /home/mutu/project-frontend/thy-fly-menu-helper
               git reset --hard
               git pull origin main
             fi
 
             # Navigate to the project directory
-            cd $PROJECT_DIR
+            cd /home/mutu/project-frontend/thy-fly-menu-helper
 
             # Install dependencies
             echo "Installing dependencies..."
