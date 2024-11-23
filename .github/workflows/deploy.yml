@@ -32,12 +32,12 @@ jobs:
       - name: Deploy Frontend
         run: |
           SERVER_IP="${{ secrets.SERVER_IP }}"
-          SERVER_USER_NAME="${{ secrets.SERVER_USER_NAME }}"
+          USER_NAME_SERVER="${{ secrets.USER_NAME_SERVER }}"
           PROJECT_DIR="${{ secrets.PROJECT_DIR }}"
-          GITHUB_USER_NAME="${{ secrets.GITHUB_USER_NAME }}"  # GitHub username secret
+          USER_NAME_GITHUB="${{ secrets.USER_NAME_GITHUB }}"  # GitHub username secret
           REPO_NAME="thy-fly-menu-helper"  # Hardcoded repository name
 
-          ssh -T $SERVER_USER_NAME@$SERVER_IP << 'EOF'
+          ssh -T $USER_NAME_SERVER@$SERVER_IP << 'EOF'
             set -e
 
             # Check if PM2 is installed, install it if not
@@ -52,7 +52,7 @@ jobs:
             # Navigate to the project directory or clone if it doesn't exist
             if [ ! -d "$PROJECT_DIR" ]; then
               echo "Cloning repository..."
-              git clone git@github.com:$GITHUB_USER_NAME/$REPO_NAME.git $PROJECT_DIR
+              git clone git@github.com:$USER_NAME_GITHUB/$REPO_NAME.git $PROJECT_DIR
             else
               echo "Pulling latest changes..."
               cd $PROJECT_DIR
