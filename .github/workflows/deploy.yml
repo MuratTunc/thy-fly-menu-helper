@@ -12,48 +12,44 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        continue-on-error: false # Ensure this step fails the job if it fails
         id: checkout
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
-        continue-on-error: false
         id: setup_ssh
 
       - name: Add host to known hosts
         run: |
-          echo "Adding host to known hosts..."
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts || { echo "Failed to add host to known hosts"; exit 1; }
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to Server
+      - name: Deploy Frontend
         run: |
-          # Define server and project parameters
           SERVER_IP="${{ secrets.SERVER_IP }}"
           USER_NAME="${{ secrets.USER_NAME }}"
-          FRONTEND_DIR="/var/www/frontend"
-          PROJECT_DIR="/home/mutu/project-frontend"
+          PROJECT_DIR="${{ secrets.PROJECT_DIR }}"
+          REPO_NAME="${{ secrets.REPO_NAME }}" # Repository name from secret
 
-          echo "Deploying frontend to the server..."
-          ssh -T -o StrictHostKeyChecking=no $USER_NAME@$SERVER_IP << EOF
-            set -e  # Exit on any error
+          ssh -T $USER_NAME@$SERVER_IP << 'EOF'
+            set -e
 
-            # Check if /var/www/frontend directory exists, if not create it
-            if [ ! -d "$FRONTEND_DIR" ]; then
-              echo "$FRONTEND_DIR does not exist. Creating the directory..."
-              sudo mkdir -p $FRONTEND_DIR
+            # Check if PM2 is installed, install it if not
+            if ! command -v pm2 &> /dev/null
+            then
+              echo "PM2 not found. Installing PM2..."
+              sudo npm install -g pm2
             else
-              echo "$FRONTEND_DIR exists."
+              echo "PM2 is already installed."
             fi
 
-            # Check if the project directory exists
+            # Navigate to the project directory or clone if it doesn't exist
             if [ ! -d "$PROJECT_DIR" ]; then
-              echo "Directory does not exist. Cloning repository..."
-              git clone git@github.com:MuratTunc/thy-fly-menu-helper.git $PROJECT_DIR
+              echo "Cloning repository..."
+              git clone git@github.com:$USER_NAME/$REPO_NAME.git $PROJECT_DIR
             else
-              echo "Directory exists. Pulling latest changes..."
+              echo "Pulling latest changes..."
               cd $PROJECT_DIR
               git reset --hard
               git pull origin main
@@ -62,33 +58,22 @@ jobs:
             # Navigate to the project directory
             cd $PROJECT_DIR
 
-            # Install dependencies if npm is not installed
-            if ! command -v npm &> /dev/null
-            then
-              echo "npm not found. Installing npm..."
-              sudo apt update
-              sudo apt install -y npm
-            else
-              echo "npm is already installed."
-            fi
-
-            # Install project dependencies
+            # Install dependencies
             echo "Installing dependencies..."
-            npm install || { echo "npm install failed!"; exit 1; }
+            npm install
 
             # Build the project
             echo "Building the project..."
-            npm run build || { echo "npm run build failed!"; exit 1; }
+            npm run build
 
-            # Copy build files to the frontend directory
-            echo "Copying build files to the server directory..."
-            sudo rm -rf $FRONTEND_DIR/*
-            sudo cp -R ./out/* $FRONTEND_DIR/
+            # Start or reload the application with PM2
+            echo "Starting the application with PM2..."
+            pm2 start npm --name "thyflightmenujs-app" -- start || pm2 restart "thyflightmenujs-app"
+            pm2 save
 
-            # Set permissions (optional)
-            sudo chown -R www-data:www-data $FRONTEND_DIR
+            # Confirm PM2 status
+            echo "Checking PM2 status..."
+            pm2 status || { echo "PM2 process failed to start! Please check the logs."; exit 1; }
 
-            # Restart Nginx to apply changes
-            echo "Restarting Nginx..."
-            sudo systemctl restart nginx || { echo "Failed to restart Nginx!"; exit 1; }
+            echo "Deployment complete!"
           EOF
