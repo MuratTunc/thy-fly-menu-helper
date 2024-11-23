@@ -33,14 +33,14 @@ jobs:
         run: |
           SERVER_IP="${{ secrets.SERVER_IP }}"
           USER_NAME_SERVER="${{ secrets.USER_NAME_SERVER }}"
-          PROJECT_DIR="/home/mutu/project-frontend/thy-fly-menu-helper"  # Ensure this is a valid path
+          SERVER_PROJECT_DIR="${{ secrets.SERVER_PROJECT_DIR }}"  # Ensure this is a valid path SERVER_PROJECT_DIR
 
           # Debugging: Print PROJECT_DIR to check if it's set correctly
-          echo "PROJECT_DIR: $PROJECT_DIR"
+          echo "SERVER_PROJECT_DIR: $SERVER_PROJECT_DIR"
 
-          # Check if PROJECT_DIR is not empty
-          if [ -z "$PROJECT_DIR" ]; then
-            echo "Error: PROJECT_DIR is empty or not set. Please check the value."
+          # Check if SERVER_PROJECT_DIR is not empty
+          if [ -z "$SERVER_PROJECT_DIR" ]; then
+            echo "Error: SERVER_PROJECT_DIR is empty or not set. Please check the value."
             exit 1
           fi
 
@@ -48,7 +48,7 @@ jobs:
             set -e
 
             # Debugging: Print the PROJECT_DIR on the server to verify it
-            echo "PROJECT_DIR on server: $PROJECT_DIR"
+            echo "SERVER_PROJECT_DIR on server: $SERVER_PROJECT_DIR"
 
             # Check if PM2 is installed, install it if not
             if ! command -v pm2 &> /dev/null
@@ -70,20 +70,20 @@ jobs:
 
             # Ensure the directory path is correctly passed and exists
             echo "Checking if project directory exists..."
-            if [ ! -d "$PROJECT_DIR" ]; then
+            if [ ! -d "$SERVER_PROJECT_DIR" ]; then
               echo "Creating project directory..."
-              mkdir -p "$PROJECT_DIR"  # Create the project directory if it doesn't exist
+              mkdir -p "$SERVER_PROJECT_DIR"  # Create the project directory if it doesn't exist
               echo "Cloning repository..."
-              git clone git@github.com:MuratTunc/thy-fly-menu-helper.git "$PROJECT_DIR"
+              git clone git@github.com:MuratTunc/thy-fly-menu-helper.git "$SERVER_PROJECT_DIR"
             else
-              echo "Project directory exists. Pulling latest changes..."
-              cd "$PROJECT_DIR"
+              echo "Server Project directory exists. Pulling latest changes..."
+              cd "$SERVER_PROJECT_DIR"
               git reset --hard
               git pull origin main
             fi
 
             # Navigate to the project directory
-            cd "$PROJECT_DIR"
+            cd "$SERVER_PROJECT_DIR"
 
             # Install dependencies
             echo "Installing dependencies..."
