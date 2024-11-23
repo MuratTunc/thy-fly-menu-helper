@@ -33,7 +33,8 @@ jobs:
         run: |
           SERVER_IP="${{ secrets.SERVER_IP }}"
           USER_NAME_SERVER="${{ secrets.USER_NAME_SERVER }}"
-          SERVER_PROJECT_DIR="${{ secrets.SERVER_PROJECT_DIR }}"  # Ensure this is a valid path SERVER_PROJECT_DIR
+          SERVER_PROJECT_DIR="${{ secrets.SERVER_PROJECT_DIR }}"
+          REPO="${{ secrets.REPO }}"
 
           # Debugging: Print PROJECT_DIR to check if it's set correctly
           echo "SERVER_PROJECT_DIR: $SERVER_PROJECT_DIR"
@@ -74,7 +75,7 @@ jobs:
               echo "Creating project directory..."
               mkdir -p "$SERVER_PROJECT_DIR"  # Create the project directory if it doesn't exist
               echo "Cloning repository..."
-              git clone git@github.com:MuratTunc/thy-fly-menu-helper.git "$SERVER_PROJECT_DIR"
+              git clone "$REPO" "$SERVER_PROJECT_DIR"
             else
               echo "Server Project directory exists. Pulling latest changes..."
               cd "$SERVER_PROJECT_DIR"
