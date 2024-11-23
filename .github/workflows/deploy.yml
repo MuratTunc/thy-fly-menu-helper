@@ -33,7 +33,7 @@ jobs:
         run: |
           SERVER_IP="${{ secrets.SERVER_IP }}"
           USER_NAME_SERVER="${{ secrets.USER_NAME_SERVER }}"
-          PROJECT_DIR="/home/mutu/project-frontend/thy-fly-menu-helper"  # Make sure this is a valid path
+          PROJECT_DIR="/home/mutu/project-frontend/thy-fly-menu-helper"  # Ensure this is a valid path
 
           # Debugging: Print PROJECT_DIR to check if it's set correctly
           echo "PROJECT_DIR: $PROJECT_DIR"
@@ -44,7 +44,7 @@ jobs:
             exit 1
           fi
 
-          ssh -T $USER_NAME_SERVER@$SERVER_IP << 'EOF'
+          ssh -T $USER_NAME_SERVER@$SERVER_IP << EOF
             set -e
 
             # Debugging: Print the PROJECT_DIR on the server to verify it
@@ -59,7 +59,7 @@ jobs:
               echo "PM2 is already installed."
             fi
 
-            # Check if project directory exists, and create it if not
+            # Ensure the directory path is correctly passed and exists
             echo "Checking if project directory exists..."
             if [ ! -d "$PROJECT_DIR" ]; then
               echo "Creating project directory..."
