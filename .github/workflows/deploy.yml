@@ -59,6 +59,15 @@ jobs:
               echo "PM2 is already installed."
             fi
 
+            # Stop the running application (if it exists)
+            echo "Checking if the application is running..."
+            if pm2 list | grep -q "thyflightmenujs-app"; then
+              echo "Application is running. Stopping it..."
+              pm2 stop thyflightmenujs-app
+            else
+              echo "Application is not running. Proceeding..."
+            fi
+
             # Ensure the directory path is correctly passed and exists
             echo "Checking if project directory exists..."
             if [ ! -d "$PROJECT_DIR" ]; then
