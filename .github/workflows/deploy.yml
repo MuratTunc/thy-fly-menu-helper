@@ -37,6 +37,9 @@ jobs:
           USER_NAME_GITHUB="${{ secrets.USER_NAME_GITHUB }}"  # GitHub username secret
           REPO_NAME="thy-fly-menu-helper"  # Hardcoded repository name
 
+          echo "Connecting to server $USER_NAME_SERVER@$SERVER_IP"
+          echo "Cloning repository from git@github.com:$USER_NAME_GITHUB/$REPO_NAME.git"
+
           ssh -T $USER_NAME_SERVER@$SERVER_IP << 'EOF'
             set -e
 
@@ -50,11 +53,12 @@ jobs:
             fi
 
             # Navigate to the project directory or clone if it doesn't exist
+            echo "Checking if project directory exists..."
             if [ ! -d "$PROJECT_DIR" ]; then
               echo "Cloning repository..."
               git clone git@github.com:$USER_NAME_GITHUB/$REPO_NAME.git $PROJECT_DIR
             else
-              echo "Pulling latest changes..."
+              echo "Project directory exists. Pulling latest changes..."
               cd $PROJECT_DIR
               git reset --hard
               git pull origin main
