@@ -39,6 +39,7 @@ jobs:
 
           echo "Connecting to server $USER_NAME_SERVER@$SERVER_IP"
           echo "Cloning repository from git@github.com:$USER_NAME_GITHUB/$REPO_NAME.git"
+          echo "Full clone URL: git@github.com:$USER_NAME_GITHUB/$REPO_NAME.git"
 
           ssh -T $USER_NAME_SERVER@$SERVER_IP << 'EOF'
             set -e
