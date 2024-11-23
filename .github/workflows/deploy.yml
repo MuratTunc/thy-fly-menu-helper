@@ -57,7 +57,7 @@ jobs:
             echo "Checking if project directory exists..."
             if [ ! -d "$PROJECT_DIR" ]; then
               echo "Cloning repository..."
-              git clone git@github.com:$USER_NAME_GITHUB/$REPO_NAME.git $PROJECT_DIR
+              git clone git@github.com:MuratTunc/thy-fly-menu-helper.git $PROJECT_DIR
             else
               echo "Project directory exists. Pulling latest changes..."
               cd $PROJECT_DIR
